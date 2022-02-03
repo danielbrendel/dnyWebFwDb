@@ -23,7 +23,7 @@ class LanguageModel extends Model
     public static function getLanguages()
     {
         try {
-            return static::orderBy('language', 'asc')->all();
+            return static::orderBy('language', 'asc')->get();
         } catch (\Exception $e) {
             throw $e;
         }

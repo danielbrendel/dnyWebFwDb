@@ -7,9 +7,21 @@ use App\Models\User;
 
 class MainController extends Controller
 {
+    /**
+     * Show index page
+     * 
+     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     */
     public function index()
     {
-        return view('home');
+        $user = null;
+        if (!\Auth::guest()) {
+            $user = User::getByAuthId();
+        }
+
+        return view('home', [
+            'user' => $user
+        ]);
     }
 
     /**

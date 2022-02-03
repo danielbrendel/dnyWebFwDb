@@ -33,6 +33,7 @@ module.exports = function xhrAdapter(config) {
   return new Promise(function dispatchXhrRequest(resolve, reject) {
     var requestData = config.data;
     var requestHeaders = config.headers;
+    var responseType = config.responseType;
 
     if (utils.isFormData(requestData)) {
       delete requestHeaders['Content-Type']; // Let the browser set it
@@ -53,23 +54,14 @@ module.exports = function xhrAdapter(config) {
     // Set the request timeout in MS
     request.timeout = config.timeout;
 
-    // Listen for ready state
-    request.onreadystatechange = function handleLoad() {
-      if (!request || request.readyState !== 4) {
+    function onloadend() {
+      if (!request) {
         return;
       }
-
-      // The request errored out and we didn't get a response, this will be
-      // handled by onerror instead
-      // With one exception: request that using file: protocol, most browsers
-      // will return status as 0 even though it's a successful request
-      if (request.status === 0 && !(request.responseURL && request.responseURL.indexOf('file:') === 0)) {
-        return;
-      }
-
       // Prepare the response
       var responseHeaders = 'getAllResponseHeaders' in request ? parseHeaders(request.getAllResponseHeaders()) : null;
-      var responseData = !config.responseType || config.responseType === 'text' ? request.responseText : request.response;
+      var responseData = !responseType || responseType === 'text' ||  responseType === 'json' ?
+        request.responseText : request.response;
       var response = {
         data: responseData,
         status: request.status,
@@ -83,7 +75,30 @@ module.exports = function xhrAdapter(config) {
 
       // Clean up request
       request = null;
-    };
+    }
+
+    if ('onloadend' in request) {
+      // Use onloadend if available
+      request.onloadend = onloadend;
+    } else {
+      // Listen for ready state to emulate onloadend
+      request.onreadystatechange = function handleLoad() {
+        if (!request || request.readyState !== 4) {
+          return;
+        }
+
+        // The request errored out and we didn't get a response, this will be
+        // handled by onerror instead
+        // With one exception: request that using file: protocol, most browsers
+        // will return status as 0 even though it's a successful request
+        if (request.status === 0 && !(request.responseURL && request.responseURL.indexOf('file:') === 0)) {
+          return;
+        }
+        // readystate handler is calling before onerror or ontimeout handlers,
+        // so we should call onloadend on the next 'tick'
+        setTimeout(onloadend);
+      };
+    }
 
     // Handle browser request cancellation (as opposed to a manual cancellation)
     request.onabort = function handleAbort() {
@@ -113,7 +128,10 @@ module.exports = function xhrAdapter(config) {
       if (config.timeoutErrorMessage) {
         timeoutErrorMessage = config.timeoutErrorMessage;
       }
-      reject(createError(timeoutErrorMessage, config, 'ECONNABORTED',
+      reject(createError(
+        timeoutErrorMessage,
+        config,
+        config.transitional && config.transitional.clarifyTimeoutError ? 'ETIMEDOUT' : 'ECONNABORTED',
         request));
 
       // Clean up request
@@ -153,16 +171,8 @@ module.exports = function xhrAdapter(config) {
     }
 
     // Add responseType to request if needed
-    if (config.responseType) {
-      try {
-        request.responseType = config.responseType;
-      } catch (e) {
-        // Expected DOMException thrown by browsers not compatible XMLHttpRequest Level 2.
-        // But, this can be suppressed for 'json' type as it can be parsed by default 'transformResponse' function.
-        if (config.responseType !== 'json') {
-          throw e;
-        }
-      }
+    if (responseType && responseType !== 'json') {
+      request.responseType = config.responseType;
     }
 
     // Handle progress if needed
@@ -263,7 +273,7 @@ axios.isAxiosError = __webpack_require__(/*! ./helpers/isAxiosError */ "./node_m
 module.exports = axios;
 
 // Allow use of default import syntax in TypeScript
-module.exports.default = axios;
+module.exports["default"] = axios;
 
 
 /***/ }),
@@ -396,7 +406,9 @@ var buildURL = __webpack_require__(/*! ../helpers/buildURL */ "./node_modules/ax
 var InterceptorManager = __webpack_require__(/*! ./InterceptorManager */ "./node_modules/axios/lib/core/InterceptorManager.js");
 var dispatchRequest = __webpack_require__(/*! ./dispatchRequest */ "./node_modules/axios/lib/core/dispatchRequest.js");
 var mergeConfig = __webpack_require__(/*! ./mergeConfig */ "./node_modules/axios/lib/core/mergeConfig.js");
+var validator = __webpack_require__(/*! ../helpers/validator */ "./node_modules/axios/lib/helpers/validator.js");
 
+var validators = validator.validators;
 /**
  * Create a new instance of Axios
  *
@@ -436,20 +448,71 @@ Axios.prototype.request = function request(config) {
     config.method = 'get';
   }
 
-  // Hook up interceptors middleware
-  var chain = [dispatchRequest, undefined];
-  var promise = Promise.resolve(config);
+  var transitional = config.transitional;
 
+  if (transitional !== undefined) {
+    validator.assertOptions(transitional, {
+      silentJSONParsing: validators.transitional(validators.boolean, '1.0.0'),
+      forcedJSONParsing: validators.transitional(validators.boolean, '1.0.0'),
+      clarifyTimeoutError: validators.transitional(validators.boolean, '1.0.0')
+    }, false);
+  }
+
+  // filter out skipped interceptors
+  var requestInterceptorChain = [];
+  var synchronousRequestInterceptors = true;
   this.interceptors.request.forEach(function unshiftRequestInterceptors(interceptor) {
-    chain.unshift(interceptor.fulfilled, interceptor.rejected);
+    if (typeof interceptor.runWhen === 'function' && interceptor.runWhen(config) === false) {
+      return;
+    }
+
+    synchronousRequestInterceptors = synchronousRequestInterceptors && interceptor.synchronous;
+
+    requestInterceptorChain.unshift(interceptor.fulfilled, interceptor.rejected);
   });
 
+  var responseInterceptorChain = [];
   this.interceptors.response.forEach(function pushResponseInterceptors(interceptor) {
-    chain.push(interceptor.fulfilled, interceptor.rejected);
+    responseInterceptorChain.push(interceptor.fulfilled, interceptor.rejected);
   });
 
-  while (chain.length) {
-    promise = promise.then(chain.shift(), chain.shift());
+  var promise;
+
+  if (!synchronousRequestInterceptors) {
+    var chain = [dispatchRequest, undefined];
+
+    Array.prototype.unshift.apply(chain, requestInterceptorChain);
+    chain = chain.concat(responseInterceptorChain);
+
+    promise = Promise.resolve(config);
+    while (chain.length) {
+      promise = promise.then(chain.shift(), chain.shift());
+    }
+
+    return promise;
+  }
+
+
+  var newConfig = config;
+  while (requestInterceptorChain.length) {
+    var onFulfilled = requestInterceptorChain.shift();
+    var onRejected = requestInterceptorChain.shift();
+    try {
+      newConfig = onFulfilled(newConfig);
+    } catch (error) {
+      onRejected(error);
+      break;
+    }
+  }
+
+  try {
+    promise = dispatchRequest(newConfig);
+  } catch (error) {
+    return Promise.reject(error);
+  }
+
+  while (responseInterceptorChain.length) {
+    promise = promise.then(responseInterceptorChain.shift(), responseInterceptorChain.shift());
   }
 
   return promise;
@@ -511,10 +574,12 @@ function InterceptorManager() {
  *
  * @return {Number} An ID used to remove interceptor later
  */
-InterceptorManager.prototype.use = function use(fulfilled, rejected) {
+InterceptorManager.prototype.use = function use(fulfilled, rejected, options) {
   this.handlers.push({
     fulfilled: fulfilled,
-    rejected: rejected
+    rejected: rejected,
+    synchronous: options ? options.synchronous : false,
+    runWhen: options ? options.runWhen : null
   });
   return this.handlers.length - 1;
 };
@@ -647,7 +712,8 @@ module.exports = function dispatchRequest(config) {
   config.headers = config.headers || {};
 
   // Transform request data
-  config.data = transformData(
+  config.data = transformData.call(
+    config,
     config.data,
     config.headers,
     config.transformRequest
@@ -673,7 +739,8 @@ module.exports = function dispatchRequest(config) {
     throwIfCancellationRequested(config);
 
     // Transform response data
-    response.data = transformData(
+    response.data = transformData.call(
+      config,
       response.data,
       response.headers,
       config.transformResponse
@@ -686,7 +753,8 @@ module.exports = function dispatchRequest(config) {
 
       // Transform response data
       if (reason && reason.response) {
-        reason.response.data = transformData(
+        reason.response.data = transformData.call(
+          config,
           reason.response.data,
           reason.response.headers,
           config.transformResponse
@@ -898,6 +966,7 @@ module.exports = function settle(resolve, reject, response) {
 
 
 var utils = __webpack_require__(/*! ./../utils */ "./node_modules/axios/lib/utils.js");
+var defaults = __webpack_require__(/*! ./../defaults */ "./node_modules/axios/lib/defaults.js");
 
 /**
  * Transform the data for a request or a response
@@ -908,9 +977,10 @@ var utils = __webpack_require__(/*! ./../utils */ "./node_modules/axios/lib/util
  * @returns {*} The resulting transformed data
  */
 module.exports = function transformData(data, headers, fns) {
+  var context = this || defaults;
   /*eslint no-param-reassign:0*/
   utils.forEach(fns, function transform(fn) {
-    data = fn(data, headers);
+    data = fn.call(context, data, headers);
   });
 
   return data;
@@ -926,11 +996,12 @@ module.exports = function transformData(data, headers, fns) {
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 "use strict";
-/* provided dependency */ var process = __webpack_require__(/*! process/browser */ "./node_modules/process/browser.js");
+/* provided dependency */ var process = __webpack_require__(/*! process/browser.js */ "./node_modules/process/browser.js");
 
 
 var utils = __webpack_require__(/*! ./utils */ "./node_modules/axios/lib/utils.js");
 var normalizeHeaderName = __webpack_require__(/*! ./helpers/normalizeHeaderName */ "./node_modules/axios/lib/helpers/normalizeHeaderName.js");
+var enhanceError = __webpack_require__(/*! ./core/enhanceError */ "./node_modules/axios/lib/core/enhanceError.js");
 
 var DEFAULT_CONTENT_TYPE = {
   'Content-Type': 'application/x-www-form-urlencoded'
@@ -954,12 +1025,35 @@ function getDefaultAdapter() {
   return adapter;
 }
 
+function stringifySafely(rawValue, parser, encoder) {
+  if (utils.isString(rawValue)) {
+    try {
+      (parser || JSON.parse)(rawValue);
+      return utils.trim(rawValue);
+    } catch (e) {
+      if (e.name !== 'SyntaxError') {
+        throw e;
+      }
+    }
+  }
+
+  return (encoder || JSON.stringify)(rawValue);
+}
+
 var defaults = {
+
+  transitional: {
+    silentJSONParsing: true,
+    forcedJSONParsing: true,
+    clarifyTimeoutError: false
+  },
+
   adapter: getDefaultAdapter(),
 
   transformRequest: [function transformRequest(data, headers) {
     normalizeHeaderName(headers, 'Accept');
     normalizeHeaderName(headers, 'Content-Type');
+
     if (utils.isFormData(data) ||
       utils.isArrayBuffer(data) ||
       utils.isBuffer(data) ||
@@ -976,20 +1070,32 @@ var defaults = {
       setContentTypeIfUnset(headers, 'application/x-www-form-urlencoded;charset=utf-8');
       return data.toString();
     }
-    if (utils.isObject(data)) {
-      setContentTypeIfUnset(headers, 'application/json;charset=utf-8');
-      return JSON.stringify(data);
+    if (utils.isObject(data) || (headers && headers['Content-Type'] === 'application/json')) {
+      setContentTypeIfUnset(headers, 'application/json');
+      return stringifySafely(data);
     }
     return data;
   }],
 
   transformResponse: [function transformResponse(data) {
-    /*eslint no-param-reassign:0*/
-    if (typeof data === 'string') {
+    var transitional = this.transitional;
+    var silentJSONParsing = transitional && transitional.silentJSONParsing;
+    var forcedJSONParsing = transitional && transitional.forcedJSONParsing;
+    var strictJSONParsing = !silentJSONParsing && this.responseType === 'json';
+
+    if (strictJSONParsing || (forcedJSONParsing && utils.isString(data) && data.length)) {
       try {
-        data = JSON.parse(data);
-      } catch (e) { /* Ignore */ }
+        return JSON.parse(data);
+      } catch (e) {
+        if (strictJSONParsing) {
+          if (e.name === 'SyntaxError') {
+            throw enhanceError(e, this, 'E_JSON_PARSE');
+          }
+          throw e;
+        }
+      }
     }
+
     return data;
   }],
 
@@ -1472,6 +1578,122 @@ module.exports = function spread(callback) {
 
 /***/ }),
 
+/***/ "./node_modules/axios/lib/helpers/validator.js":
+/*!*****************************************************!*\
+  !*** ./node_modules/axios/lib/helpers/validator.js ***!
+  \*****************************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+"use strict";
+
+
+var pkg = __webpack_require__(/*! ./../../package.json */ "./node_modules/axios/package.json");
+
+var validators = {};
+
+// eslint-disable-next-line func-names
+['object', 'boolean', 'number', 'function', 'string', 'symbol'].forEach(function(type, i) {
+  validators[type] = function validator(thing) {
+    return typeof thing === type || 'a' + (i < 1 ? 'n ' : ' ') + type;
+  };
+});
+
+var deprecatedWarnings = {};
+var currentVerArr = pkg.version.split('.');
+
+/**
+ * Compare package versions
+ * @param {string} version
+ * @param {string?} thanVersion
+ * @returns {boolean}
+ */
+function isOlderVersion(version, thanVersion) {
+  var pkgVersionArr = thanVersion ? thanVersion.split('.') : currentVerArr;
+  var destVer = version.split('.');
+  for (var i = 0; i < 3; i++) {
+    if (pkgVersionArr[i] > destVer[i]) {
+      return true;
+    } else if (pkgVersionArr[i] < destVer[i]) {
+      return false;
+    }
+  }
+  return false;
+}
+
+/**
+ * Transitional option validator
+ * @param {function|boolean?} validator
+ * @param {string?} version
+ * @param {string} message
+ * @returns {function}
+ */
+validators.transitional = function transitional(validator, version, message) {
+  var isDeprecated = version && isOlderVersion(version);
+
+  function formatMessage(opt, desc) {
+    return '[Axios v' + pkg.version + '] Transitional option \'' + opt + '\'' + desc + (message ? '. ' + message : '');
+  }
+
+  // eslint-disable-next-line func-names
+  return function(value, opt, opts) {
+    if (validator === false) {
+      throw new Error(formatMessage(opt, ' has been removed in ' + version));
+    }
+
+    if (isDeprecated && !deprecatedWarnings[opt]) {
+      deprecatedWarnings[opt] = true;
+      // eslint-disable-next-line no-console
+      console.warn(
+        formatMessage(
+          opt,
+          ' has been deprecated since v' + version + ' and will be removed in the near future'
+        )
+      );
+    }
+
+    return validator ? validator(value, opt, opts) : true;
+  };
+};
+
+/**
+ * Assert object's properties type
+ * @param {object} options
+ * @param {object} schema
+ * @param {boolean?} allowUnknown
+ */
+
+function assertOptions(options, schema, allowUnknown) {
+  if (typeof options !== 'object') {
+    throw new TypeError('options must be an object');
+  }
+  var keys = Object.keys(options);
+  var i = keys.length;
+  while (i-- > 0) {
+    var opt = keys[i];
+    var validator = schema[opt];
+    if (validator) {
+      var value = options[opt];
+      var result = value === undefined || validator(value, opt, options);
+      if (result !== true) {
+        throw new TypeError('option ' + opt + ' must be ' + result);
+      }
+      continue;
+    }
+    if (allowUnknown !== true) {
+      throw Error('Unknown option ' + opt);
+    }
+  }
+}
+
+module.exports = {
+  isOlderVersion: isOlderVersion,
+  assertOptions: assertOptions,
+  validators: validators
+};
+
+
+/***/ }),
+
 /***/ "./node_modules/axios/lib/utils.js":
 /*!*****************************************!*\
   !*** ./node_modules/axios/lib/utils.js ***!
@@ -1482,8 +1704,6 @@ module.exports = function spread(callback) {
 
 
 var bind = __webpack_require__(/*! ./helpers/bind */ "./node_modules/axios/lib/helpers/bind.js");
-
-/*global toString:true*/
 
 // utils is a library of generic helper functions non-specific to axios
 
@@ -1668,7 +1888,7 @@ function isURLSearchParams(val) {
  * @returns {String} The String freed of excess whitespace
  */
 function trim(str) {
-  return str.replace(/^\s*/, '').replace(/\s*$/, '');
+  return str.trim ? str.trim() : str.replace(/^\s+|\s+$/g, '');
 }
 
 /**
@@ -1840,81 +2060,18 @@ module.exports = {
   \*****************************/
 /***/ ((__unused_webpack_module, __unused_webpack_exports, __webpack_require__) => {
 
-/*
-    Danigram (dnyDanigram) developed by Daniel Brendel
+__webpack_require__(/*! ./bootstrap */ "./resources/js/bootstrap.js");
 
-        (C) 2019 - 2021 by Daniel Brendel
-
-    Version: 1.0
-    Contact: dbrendel1988<at>gmail<dot>com
-    GitHub: https://github.com/danielbrendel/
-
-    Released under the MIT license
-*/
-__webpack_require__(/*! ./bootstrap.js */ "./resources/js/bootstrap.js"); //Make Vue instance
-
-
-var vue = new Vue({
+window.vue = new Vue({
   el: '#main',
   data: {
-    bShowRecover: false,
     bShowRegister: false,
-    bShowEditProfile: false,
-    bShowEditComment: false,
-    bShowCreateCat: false,
-    bShowEditCat: false,
-    bShowCreateFaq: false,
-    bShowEditFaq: false,
     bShowLogin: false,
-    bShowWelcomeOverlay: false,
-    bShowCreateTheme: false,
-    bShowEditTheme: false,
-    bShowReplyThread: false,
-    bShowViewStory: false,
-    bShowAddStory: false,
-    bShowBuyProMode: false,
-    bShowCreateProfileItem: false,
-    bShowEditProfileItem: false,
-    bShowCreateThread: false,
-    bShowReplyForumThread: false,
-    bShowEditForumThread: false,
-    bShowEditForumPost: false,
-    bShowCreateForum: false,
-    bShowEditForum: false,
+    bShowRecover: false,
     translationTable: {
-      copiedToClipboard: 'Text has been copyied to clipboard!',
-      toggleNsfw: 'Toggle NSFW',
-      toggleNsfw2: '[NSFW] Toggle',
-      lock: 'Lock',
-      edit: 'Edit',
-      shareWhatsApp: 'Share via WhatsApp',
-      shareTwitter: 'Share via Twitter',
-      shareFacebook: 'Share via Facebook',
-      shareEMail: 'Share via E-Mail',
-      shareSms: 'Share via SMS',
-      copyLink: 'Copy link',
-      report: 'Report',
-      expandThread: 'Expand thread',
-      reply: 'Reply',
-      viewMore: 'View more',
-      reportPost: 'The post has been reported!',
-      removeFav: 'Remove favorite',
-      addFav: 'Add favorite',
-      noFavsYet: 'You don\'t have set any favorites yet',
-      confirmLockPost: 'Do you want to lock this post?',
-      confirmToggleNsfw: 'Do you want to toggle the nsfw flag for this post?',
-      confirmLockHashtag: 'Do you want to lock this hashtag?',
-      confirmLockUser: 'Do you want to deactivate this profile?',
-      confirmLockForumPost: 'Do you want to lock this forum post?',
-      confirmDeleteOwnAccount: 'Do you really want to delete your profile? If yes then please enter your password in order to proceed.',
-      confirmLockComment: 'Do you want to lock this comment?',
-      pro: 'Pro',
-      forumPostEdited: 'Edited',
-      statsPosts: 'Total posts',
-      remove: 'Remove',
-      invalidUsername: 'The given username is invalid',
-      nonavailableUsername: 'The given username is not available',
-      usernameOk: 'The given username is valid and available',
+      usernameOk: 'The given name is valid and available',
+      invalidUsername: 'The name is invalid. Please use only alphanumeric characters, numbers 0-9 and the characters \'-\' and \'_\'. Also number only identifiers are considered invalid',
+      nonavailableUsername: 'The given name is already in use',
       passwordMismatching: 'The passwords do not match',
       passwordMatching: 'The passwords do match'
     }
@@ -1947,69 +2104,11 @@ var vue = new Vue({
         el.classList.remove('is-danger');
       }
     },
-    handleCookieConsent: function handleCookieConsent() {
-      var publicFeed = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
-      //Show cookie consent if not already for this client
-      var cookies = document.cookie.split(';');
-      var foundCookie = false;
-
-      for (var i = 0; i < cookies.length; i++) {
-        if (cookies[i].indexOf('cookieconsent') !== -1) {
-          foundCookie = true;
-          break;
-        }
-      }
-
-      if (foundCookie === false && publicFeed) {
-        document.getElementById('cookie-consent').style.display = 'inline-block';
-        document.getElementById('feed-left').classList.add('is-negative-top');
-      }
-    },
-    clickedCookieConsentButton: function clickedCookieConsentButton() {
-      var expDate = new Date(Date.now() + 1000 * 60 * 60 * 24 * 365);
-      document.cookie = 'cookieconsent=1; expires=' + expDate.toUTCString() + ';';
-      document.getElementById('cookie-consent').style.display = 'none';
-      document.getElementById('feed-left').classList.remove('is-negative-top');
-    },
-    markWelcomeOverlayRead: function markWelcomeOverlayRead() {
-      var expDate = new Date(Date.now() + 1000 * 60 * 60 * 24 * 365);
-      document.cookie = 'welcome_content=1; expires=' + expDate.toUTCString() + ';';
-      this.bShowWelcomeOverlay = false;
-    },
-    handleWelcomeOverlay: function handleWelcomeOverlay() {
-      var cookies = document.cookie.split(';');
-
-      for (var i = 0; i < cookies.length; i++) {
-        if (cookies[i].indexOf('welcome_content') !== -1) {
-          this.bShowWelcomeOverlay = false;
-          return;
-        }
-      }
-
-      this.bShowWelcomeOverlay = true;
-    },
-    setPostFetchType: function setPostFetchType(type) {
-      var expDate = new Date(Date.now() + 1000 * 60 * 60 * 24 * 365);
-      document.cookie = 'fetch_type=' + type + '; expires=' + expDate.toUTCString() + ';';
-    },
-    getPostFetchType: function getPostFetchType() {
-      var cookies = document.cookie.split(';');
-
-      for (var i = 0; i < cookies.length; i++) {
-        if (cookies[i].indexOf('fetch_type') !== -1) {
-          return cookies[i].substr(cookies[i].indexOf('=') + 1);
-        }
-      }
-
-      this.setPostFetchType(2);
-      return 2;
-    },
     ajaxRequest: function ajaxRequest(method, url) {
       var data = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
       var successfunc = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : function (data) {};
       var finalfunc = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : function () {};
       var config = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : {};
-      //Perform ajax request
       var func = window.axios.get;
 
       if (method == 'post') {
@@ -2028,51 +2127,54 @@ var vue = new Vue({
         finalfunc();
       });
     },
-    toggleHeart: function toggleHeart(elemId, type) {
-      var obj = document.getElementById('heart-' + type.toLowerCase() + '-' + elemId);
-      this.ajaxRequest('post', window.location.origin + '/heart', {
-        entity: elemId,
-        value: !parseInt(obj.getAttribute('data-value')),
-        type: type
-      }, function (response) {
-        if (response.code === 200) {
-          if (response.value) {
-            obj.classList.remove('far', 'fa-heart');
-            obj.classList.add('fas', 'fa-heart', 'is-hearted');
-          } else {
-            obj.classList.remove('fas', 'fa-heart', 'is-hearted');
-            obj.classList.add('far', 'fa-heart');
-          }
+    initNavbar: function initNavbar() {
+      var $navbarBurgers = Array.prototype.slice.call(document.querySelectorAll('.navbar-burger'), 0);
 
-          obj.setAttribute('data-value', response.value ? '1' : '0');
-          document.getElementById('count-' + type.toLowerCase() + '-' + elemId).innerHTML = response.count;
-        } else {
-          console.log(response.msg);
+      if ($navbarBurgers.length > 0) {
+        $navbarBurgers.forEach(function (el) {
+          el.addEventListener('click', function () {
+            var target = el.dataset.target;
+            var $target = document.getElementById(target);
+            el.classList.toggle('is-active');
+            $target.classList.toggle('is-active');
+          });
+        });
+      }
+    },
+    showUsernameValidity: function showUsernameValidity(username, hint) {
+      var currentName = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : '';
+      window.vue.ajaxRequest('get', window.location.origin + '/member/name/valid?ident=' + username, {}, function (response) {
+        if (response.code == 200) {
+          if (currentName !== '' && username === currentName) {
+            hint.innerHTML = '';
+          } else if (!response.data.valid) {
+            hint.classList.add('is-danger');
+            hint.classList.remove('is-success');
+            hint.innerHTML = window.vue.translationTable.invalidUsername;
+          } else if (!response.data.available) {
+            hint.classList.add('is-danger');
+            hint.classList.remove('is-success');
+            hint.innerHTML = window.vue.translationTable.nonavailableUsername;
+          } else if (response.data.valid && response.data.available) {
+            hint.classList.remove('is-danger');
+            hint.classList.add('is-success');
+            hint.innerHTML = window.vue.translationTable.usernameOk;
+          }
         }
       });
     },
-    togglePostOptions: function togglePostOptions(elem) {
-      if (elem.classList.contains('is-active')) {
-        elem.classList.remove('is-active');
-      } else {
-        elem.classList.add('is-active');
+    showPasswordMatching: function showPasswordMatching(pw1, pw2, hint) {
+      if (pw1.length > 0 || pw2.length > 0) {
+        if (pw1 !== pw2) {
+          hint.classList.remove('is-success');
+          hint.classList.add('is-danger');
+          hint.innerHTML = window.vue.translationTable.passwordMismatching;
+        } else {
+          hint.classList.add('is-success');
+          hint.classList.remove('is-danger');
+          hint.innerHTML = window.vue.translationTable.passwordMatching;
+        }
       }
-    },
-    toggleCommentOptions: function toggleCommentOptions(elem) {
-      if (elem.classList.contains('is-active')) {
-        elem.classList.remove('is-active');
-      } else {
-        elem.classList.add('is-active');
-      }
-    },
-    copyToClipboard: function copyToClipboard(text) {
-      var el = document.createElement('textarea');
-      el.value = text;
-      document.body.appendChild(el);
-      el.select();
-      document.execCommand('copy');
-      document.body.removeChild(el);
-      alert(window.vue.translationTable.copiedToClipboard);
     },
     showError: function showError() {
       document.getElementById('flash-error').style.display = 'inherit';
@@ -2085,851 +2187,14 @@ var vue = new Vue({
       setTimeout(function () {
         document.getElementById('flash-success').style.display = 'none';
       }, 3500);
+    },
+    toggleDropdown: function toggleDropdown(obj) {
+      if (obj) {
+        obj.classList.toggle('is-hidden');
+      }
     }
   }
 });
-
-window.renderPost = function (elem) {
-  var adminOrOwner = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
-  var showNsfw = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 0;
-  var nsfwFunctionalityEnabled = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : false;
-  var isGuest = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : true;
-
-  if (elem._type === 'ad') {
-    var _html = '<div class="show-post member-form is-advertisement">' + elem.code + '</div>';
-
-    return _html;
-  }
-
-  var hashTags = '';
-  var hashArr = elem.hashtags.trim().split(' ');
-  hashArr.forEach(function (elem, index) {
-    if (elem.length > 0) {
-      hashTags += '<div class="post-hashtag"><a href="' + window.location.origin + '/t/' + elem + '">#' + elem + '</a></div>';
-    }
-  });
-  var nsfwOption = "<a href=\"javascript:void(0)\" onclick=\"toggleNsfw(" + elem.id + "); window.vue.togglePostOptions(document.getElementById('post-options-" + elem.id + "'));\" class=\"dropdown-item\">\n                " + window.vue.translationTable.toggleNsfw + "\n            </a> ";
-  var instagram = '';
-  var twitter = '';
-  var homepage = '';
-
-  if (elem.attribution_instagram.length > 0) {
-    instagram = '<div><a href="https://www.instagram.com/' + elem.attribution_instagram + '"><i class="fab fa-instagram"></i>&nbsp;' + elem.attribution_instagram + '</a>';
-  }
-
-  if (elem.attribution_twitter.length > 0) {
-    twitter = '<div><a href="https://twitter.com/' + elem.attribution_twitter + '"><i class="fab fa-twitter"></i>&nbsp;' + elem.attribution_twitter + '</a>';
-  }
-
-  if (elem.attribution_homepage.length > 0) {
-    if (!elem.attribution_homepage.startsWith('http://') && !elem.attribution_homepage.startsWith('https://')) {
-      elem.attribution_homepage = 'http://' + elem.attribution_homepage;
-    }
-
-    homepage = '<div><a href="' + elem.attribution_homepage + '"><i class="fas fa-external-link-alt"></i>&nbsp;' + elem.attribution_homepage + '</a>';
-  }
-
-  var credits = '';
-
-  if (instagram.length > 0 || twitter.length > 0 || homepage.length > 0) {
-    credits = instagram + twitter + homepage;
-  }
-
-  var adminOptions = '';
-
-  if (adminOrOwner) {
-    adminOptions = "\n            <a href=\"javascript:void(0)\" onclick=\"lockPost(" + elem.id + "); window.vue.togglePostOptions(document.getElementById('post-options-" + elem.id + "'));\" class=\"dropdown-item\">\n                " + window.vue.translationTable.lock + "\n            </a>\n            " + (nsfwFunctionalityEnabled ? nsfwOption : '');
-  }
-
-  var postTitle = '';
-
-  if (elem.title !== null) {
-    postTitle = '<div class="is-size-5 is-default-padding is-breakall">' + elem.title + '</div>';
-  }
-
-  var gfx_resource = '';
-
-  if (elem.video) {
-    videoType = 'video/' + elem.image_full.substr(elem.image_full.lastIndexOf('.') + 1);
-    gfx_resource = "<video id=\"post-image-" + elem.id + "\" class=\"is-stretched " + (elem.nsfw && showNsfw === 0 ? 'show-post-image-nsfw' : '') + "\" controls><source src=\"" + window.location.origin + '/gfx/posts/' + elem.image_full + "\" type=\"" + videoType + "\"/></video>";
-  } else {
-    gfx_resource = "<img id=\"post-image-" + elem.id + "\" class=\"is-pointer is-stretched " + (elem.nsfw && showNsfw === 0 ? 'show-post-image-nsfw' : '') + "\" src=\"" + window.location.origin + "/gfx/posts/" + elem.image_thumb + "\" onclick=\"location.href='" + window.location.origin + '/p/' + elem.id + "'\">";
-  }
-
-  var post_desc = '';
-
-  if (elem.image_full === '_none') {
-    gfx_resource = "<div id=\"post-image-" + elem.id + "\" class=\"show-post-description is-default-padding is-color-grey is-post-background is-breakall is-pointer " + (elem.nsfw && showNsfw === 0 ? 'show-post-image-nsfw' : '') + "\" onclick=\"location.href='" + window.location.origin + '/p/' + elem.id + "'\">" + elem.description + "</div>";
-    post_desc = '';
-  } else {
-    post_desc = elem.description;
-  }
-
-  var pro = '';
-
-  if (elem.user.pro) {
-    pro = '<i class="fas fa-certificate is-color-pro" title="' + window.vue.translationTable.pro + '"></i>';
-  }
-
-  var post_hashtags = '';
-
-  if (hashTags.length > 0) {
-    post_hashtags = "<div class=\"show-post-hashtags is-default-padding is-wordbreak\">" + hashTags + "</div>";
-  } else {
-    post_hashtags = '';
-  }
-
-  var post_credits = '';
-
-  if (credits.length > 0) {
-    post_credits = "<div class=\"show-post-credits is-default-padding\">" + credits + "</div>";
-  } else {
-    post_credits = '';
-  }
-
-  var heartOption = '';
-
-  if (isGuest) {
-    heartOption = "window.vue.bShowLogin = true;";
-  } else {
-    heartOption = "window.vue.toggleHeart(" + elem.id + ", 'ENT_POST');";
-  }
-
-  var category = '';
-
-  if (elem.category_icon !== null && elem.category_icon.length > 0) {
-    category = '<img src="' + window.location.origin + '/gfx/categories/' + elem.category_icon + '" width="16" height="16" alt="category">&nbsp;' + elem.category;
-  } else {
-    category = elem.category;
-  }
-
-  var html = "\n                            <div class=\"show-post member-form\">\n                            <div class=\"show-post-header is-default-padding\">\n                                <div class=\"show-post-avatar\">\n                                    <img src=\"" + window.location.origin + '/gfx/avatars/' + elem.user.avatar + "\" class=\"is-pointer\" onclick=\"location.href='" + window.location.origin + "/u/" + elem.user.username + "'\" width=\"32\" height=\"32\">\n                                </div>\n\n                                <div class=\"show-post-userinfo\">\n                                    <div><a href=\"" + window.location.origin + "/u/" + elem.user.username + "\" class=\"is-color-grey\">" + elem.user.username + "</a>&nbsp;" + pro + "</div>\n                                    <div title=\"" + elem.created_at + "\">" + elem.diffForHumans + "</div>\n                                </div>\n\n                                <div class=\"show-post-options is-inline-block\">\n                                    <div class=\"dropdown is-right\" id=\"post-options-" + elem.id + "\">\n                                        <div class=\"dropdown-trigger\" onclick=\"window.vue.togglePostOptions(document.getElementById('post-options-" + elem.id + "'));\">\n                                            <i class=\"fas fa-ellipsis-v is-pointer\"></i>\n                                        </div>\n                                        <div class=\"dropdown-menu\" role=\"menu\">\n                                            <div class=\"dropdown-content\">\n                                                <a onclick=\"window.vue.togglePostOptions(document.getElementById('post-options-" + elem.id + "'));\" href=\"whatsapp://send?text=" + window.location.origin + "/p/" + elem.id + " " + (elem.title !== null ? elem.title : '') + "\" class=\"dropdown-item\">\n                                                    <i class=\"far fa-copy\"></i>&nbsp;" + window.vue.translationTable.shareWhatsApp + "\n                                                </a>\n                                                <a onclick=\"window.vue.togglePostOptions(document.getElementById('post-options-" + elem.id + "'));\" href=\"https://twitter.com/share?url=" + encodeURIComponent(window.location.origin + '/p/' + elem.id) + "&text=" + (elem.title !== null ? elem.title : '') + "\" class=\"dropdown-item\">\n                                                    <i class=\"fab fa-twitter\"></i>&nbsp;" + window.vue.translationTable.shareTwitter + "\n                                                </a>\n                                                <a onclick=\"window.vue.togglePostOptions(document.getElementById('post-options-" + elem.id + "'));\" href=\"https://www.facebook.com/sharer/sharer.php?u=" + window.location.origin + "/p/" + elem.id + "\" class=\"dropdown-item\">\n                                                    <i class=\"fab fa-facebook\"></i>&nbsp;" + window.vue.translationTable.shareFacebook + "\n                                                </a>\n                                                <a onclick=\"window.vue.togglePostOptions(document.getElementById('post-options-" + elem.id + "'));\" href=\"mailto:name@domain.com?body=" + window.location.origin + "/p/" + elem.id + " " + (elem.title !== null ? elem.title : '') + "\" class=\"dropdown-item\">\n                                                    <i class=\"far fa-envelope\"></i>&nbsp;" + window.vue.translationTable.shareEMail + "\n                                                </a>\n                                                <a onclick=\"window.vue.togglePostOptions(document.getElementById('post-options-" + elem.id + "'));\" href=\"sms:000000000?body=" + window.location.origin + "/p/" + elem.id + " " + (elem.title !== null ? elem.title : '') + "\" class=\"dropdown-item\">\n                                                    <i class=\"fas fa-sms\"></i>&nbsp;" + window.vue.translationTable.shareSms + "\n                                                </a>\n                                                <a href=\"javascript:void(0)\" onclick=\"window.vue.copyToClipboard('" + window.location.origin + "/p/" + elem.id + " " + (elem.title !== null ? elem.title : '') + "'); window.vue.togglePostOptions(document.getElementById('post-options-" + elem.id + "'));\" class=\"dropdown-item\">\n                                                    <i class=\"far fa-copy\"></i>&nbsp;" + window.vue.translationTable.copyLink + "\n                                                </a>\n                                                <hr class=\"dropdown-divider\">\n                                                <a href=\"javascript:void(0)\" onclick=\"reportPost(" + elem.id + "); window.vue.togglePostOptions(document.getElementById('post-options-" + elem.id + "'));\" class=\"dropdown-item\">\n                                                    " + window.vue.translationTable.report + "\n                                                </a>\n                                                " + adminOptions + "\n                                            </div>\n                                        </div>\n                                    </div>\n                                </div>\n                            </div>\n\n                            " + postTitle + "\n\n                            <div class=\"show-post-image\">\n                                " + gfx_resource + "\n                            </div>\n\n                            <div class=\"show-post-attributes is-default-padding-left is-default-padding-right\">\n                                <div class=\"is-inline-block\"><span onclick=\"" + heartOption + "\"><i id=\"heart-ent_post-" + elem.id + "\" class=\"" + (elem.userHearted ? 'fas fa-heart is-hearted' : 'far fa-heart') + " is-pointer\" data-value=\"" + (elem.userHearted ? '1' : '0') + "\"></i></span> <span id=\"count-ent_post-" + elem.id + "\">" + elem.hearts + "</span><span>&nbsp;<i class=\"far fa-eye\"></i>&nbsp;" + elem.views + "</span> <span class=\"is-pointer\" onclick=\"location.href = '" + window.location.origin + "/p/" + elem.id + "#thread';\">&nbsp;<i class=\"far fa-comments\"></i>&nbsp;" + elem.comment_count + "</span></div>\n                                <div class=\"is-inline-block is-center-width " + (elem.nsfw && showNsfw === 0 ? '' : 'is-hidden') + "\"><center><a href=\"javascript:void(0)\" onclick=\"let oPostImage = document.getElementById('post-image-" + elem.id + "'); if (oPostImage.classList.contains('show-post-image-nsfw')) { oPostImage.classList.remove('show-post-image-nsfw'); } else { oPostImage.classList.add('show-post-image-nsfw'); }\" class=\"is-color-grey\">" + window.vue.translationTable.toggleNsfw2 + "</a></center></div>\n                                <div class=\"is-inline-block is-right float-right\">" + category + "</div>\n                            </div>\n\n                            <div class=\"show-post-description is-default-padding is-color-grey is-post-background is-breakall\">\n                                " + post_desc + "\n                                       </div>\n\n                                       " + post_hashtags + "\n\n                                       " + post_credits + "\n                                   </div>\n                        ";
-  return html;
-};
-
-window.renderPosterImage = function () {
-  var elems = document.getElementsByTagName('video');
-
-  for (var i = 0; i < elems.length; i++) {
-    if (elems[i].getAttribute('data-preview') === true) {
-      continue;
-    }
-
-    var url = elems[i].querySelector('source').src;
-    var video = document.createElement('video');
-    video.src = url;
-    video.setAttribute('data-id', i);
-
-    var snapshot = function snapshot() {
-      var canvas = document.createElement('canvas');
-      var ctx = canvas.getContext('2d');
-      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-      elems[video.getAttribute('data-id')].setAttribute('poster', canvas.toDataURL('image/png'));
-      elems[video.getAttribute('data-id')].setAttribute('data-preview', true);
-      video.removeEventListener('canplay', snapshot);
-    };
-
-    video.addEventListener('canplay', snapshot);
-  }
-};
-
-window.renderThread = function (elem) {
-  var adminOrOwner = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
-  var isSubComment = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
-  var parentId = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 0;
-  var options = '';
-
-  if (adminOrOwner) {
-    options = "\n            <a onclick=\"showEditComment(" + elem.id + "); window.vue.toggleCommentOptions(document.getElementById('thread-options-" + elem.id + "'));\" href=\"javascript:void(0)\" class=\"dropdown-item\">\n                <i class=\"far fa-edit\"></i>&nbsp;" + window.vue.translationTable.edit + "\n            </a>\n            <a onclick=\"lockComment(" + elem.id + "); window.vue.toggleCommentOptions(document.getElementById('thread-options-" + elem.id + "'));\" href=\"javascript:void(0)\" class=\"dropdown-item\">\n                <i class=\"fas fa-times\"></i>&nbsp;" + window.vue.translationTable.lock + "\n            </a>\n            <hr class=\"dropdown-divider\">\n        ";
-  }
-
-  var expandThread = '';
-
-  if (elem.subCount > 0) {
-    expandThread = "<div class=\"thread-footer-subthread is-inline-block is-centered\"><a class=\"is-color-grey\" href=\"javascript:void(0)\" onclick=\"fetchSubThreadPosts(" + elem.id + ")\">" + window.vue.translationTable.expandThread + "</a></div>";
-  }
-
-  var replyThread = "<div class=\"is-inline-block float-right\"><a class=\"is-color-grey\" href=\"javascript:void(0)\" onclick=\"document.getElementById('thread-reply-parent').value = '" + (isSubComment ? parentId : elem.id) + "'; document.getElementById('thread-reply-textarea').value = '@" + elem.user.username + " '; window.vue.bShowReplyThread = true;\">" + window.vue.translationTable.reply + "</a></div>";
-  var pro = '';
-
-  if (elem.user.pro) {
-    pro = '<i class="fas fa-certificate is-color-pro" title="' + window.vue.translationTable.pro + '"></i>';
-  }
-
-  var html = "\n        <div id=\"thread-" + elem.id + "\" class=\"thread-elem " + (isSubComment ? 'is-sub-comment' : '') + "\">\n            <a name=\"" + elem.id + "\"></a>\n\n            <div class=\"thread-header\">\n                <div class=\"thread-header-avatar is-inline-block\">\n                    <img width=\"24\" height=\"24\" src=\"" + window.location.origin + "/gfx/avatars/" + elem.user.avatar + "\" class=\"is-pointer\" onclick=\"location.href = '" + window.location.origin + "/u/" + elem.user.username + "';\">\n                </div>\n\n                <div class=\"thread-header-info is-inline-block\">\n                    <div><a href=\"" + window.location.origin + "/u/" + elem.user.username + "\" class=\"is-color-grey\">" + elem.user.username + "</a>&nbsp;" + pro + "</div>\n                    <div title=\"" + elem.created_at + "\">" + elem.diffForHumans + "</div>\n                </div>\n\n                <div class=\"thread-header-options is-inline-block\">\n                    <div class=\"dropdown is-right\" id=\"thread-options-" + elem.id + "\">\n                        <div class=\"dropdown-trigger\" onclick=\"window.vue.togglePostOptions(document.getElementById('thread-options-" + elem.id + "'));\">\n                            <i class=\"fas fa-ellipsis-v is-pointer\"></i>\n                        </div>\n                        <div class=\"dropdown-menu\" role=\"menu\">\n                            <div class=\"dropdown-content\">\n                                " + options + "\n\n                                <a href=\"javascript:void(0)\" onclick=\"reportComment(" + elem.id + "); window.vue.togglePostOptions(document.getElementById('thread-options-" + elem.id + "'));\" class=\"dropdown-item\">\n                                    " + window.vue.translationTable.report + "\n                                </a>\n                            </div>\n                        </div>\n                    </div>\n                </div>\n            </div>\n\n            <div class=\"thread-text is-color-grey is-post-background is-fixed-margins is-breakall\" id=\"thread-text-" + elem.id + "\">\n                " + elem.text + "\n            </div>\n\n            <div class=\"thread-footer\">\n                <div class=\"thread-footer-hearts\"><i id=\"heart-ent_comment-" + elem.id + "\" class=\"" + (elem.userHearted ? 'fas fa-heart is-hearted' : 'far fa-heart') + " is-pointer\" onclick=\"window.vue.toggleHeart(" + elem.id + ", 'ENT_COMMENT')\"></i>&nbsp;<span id=\"count-ent_comment-" + elem.id + "\">" + elem.hearts + "</span></div>\n                " + expandThread + "\n                " + replyThread + "\n            </div>\n\n            <div id=\"sub-thread-" + elem.id + "\"></div>\n        </div>\n    ";
-  return html;
-};
-
-window.fetchSubThreadPosts = function (parentId) {
-  if (typeof window.subPosts === 'undefined') {
-    window.subPosts = [];
-  }
-
-  if (typeof window.subPosts[parentId] === 'undefined') {
-    window.subPosts[parentId] = null;
-  }
-
-  document.getElementById('sub-thread-' + parentId).innerHTML += '<center><i class="fas fa-spinner fa-spin" id="spinner-sub-thread-' + parentId + '"></i></center>';
-  window.vue.ajaxRequest('get', window.location.origin + '/c/subthread?parent=' + parentId + (window.subPosts[parentId] !== null ? '&paginate=' + window.subPosts[parentId] : ''), {}, function (response) {
-    if (response.code == 200) {
-      document.getElementById('spinner-sub-thread-' + parentId).remove();
-      var html = '';
-      console.log(response.data);
-      response.data.forEach(function (elem, index) {
-        html += window.renderThread(elem, elem.adminOrOwner, true, parentId);
-      });
-      document.getElementById('sub-thread-' + parentId).innerHTML += html;
-
-      if (response.last === false) {
-        if (document.getElementById('sub-comment-more-' + parentId) !== null) {
-          document.getElementById('sub-comment-more-' + parentId).remove();
-        }
-
-        document.getElementById('sub-thread-' + parentId).innerHTML += "<center><div id=\"sub-comment-more-" + parentId + "\"><a href=\"javascript:void(0)\" onclick=\"fetchSubThreadPosts(" + parentId + ")\">" + window.vue.translationTable.viewMore + "</a></div></center>";
-      }
-
-      if (response.data.length === 0) {
-        if (document.getElementById('sub-comment-more-' + parentId) !== null) {
-          document.getElementById('sub-comment-more-' + parentId).remove();
-        }
-      } else {
-        window.subPosts[parentId] = response.data[response.data.length - 1].id;
-      }
-    }
-  });
-};
-
-window.replyThread = function (parentId, text) {
-  window.vue.ajaxRequest('post', window.location.origin + '/c/reply?parent=' + parentId, {
-    text: text
-  }, function (response) {
-    if (response.code === 200) {
-      location.href = window.location.origin + '/p/' + response.post.postId + '?c=' + response.post.id + '#' + response.post.id;
-    }
-  });
-};
-
-window.renderNotification = function (elem) {
-  var newItem = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
-  var icon = 'fas fa-info-circle';
-
-  if (elem.type === 'PUSH_HEARTED') {
-    icon = 'far fa-heart is-notifiction-color-red';
-  } else if (elem.type === 'PUSH_COMMENTED') {
-    icon = 'far fa-comment is-notifiction-color-green';
-  } else if (elem.type === 'PUSH_MENTIONED') {
-    icon = 'fas fa-bolt is-notifiction-color-blue';
-  } else if (elem.type === 'PUSH_MESSAGED') {
-    icon = 'far fa-comments is-notifiction-color-orange';
-  } else if (elem.type === 'PUSH_FAVORITED') {
-    icon = 'far fa-star is-notifiction-color-yellow';
-  } else if (elem.type === 'PUSH_FORUMREPLY') {
-    icon = 'fas fa-landmark is-notifiction-color-black';
-  }
-
-  var html = "\n        <div class=\"notification-item " + (newItem ? 'is-new-notification' : '') + "\" id=\"notification-item-" + elem.id + "\">\n            <div class=\"notification-item-inner\">\n                <div class=\"notification-item-icon\"><i class=\"" + icon + "\"></i></div>\n                <div class=\"notification-item-message\">" + elem.longMsg + "</div>\n            </div>\n        </div>\n    ";
-  return html;
-};
-
-window.renderMessageListItem = function (item) {
-  var message = item.lm.message;
-
-  if (message.length > 20) {
-    message = message.substr(0, 20) + '...';
-  }
-
-  var html = "\n        <div class=\"messages-item " + (!item.lm.seen ? 'is-new-message' : '') + "\">\n            <div class=\"messages-item-avatar\">\n                <img src=\"" + window.location.origin + "/gfx/avatars/" + item.lm.user.avatar + "\">\n            </div>\n\n            <div class=\"messages-item-name\">\n                <a href=\"" + window.location.origin + "/user/" + item.lm.user.username + "\">" + item.lm.user.username + "</a>\n            </div>\n\n            <div class=\"messages-item-subject\">\n                <a href=\"" + window.location.origin + "/messages/show/" + item.lm.id + "\">" + item.lm.subject + "</a>\n            </div>\n\n            <div class=\"message-item-lastmsg\">\n                <a href=\"" + window.location.origin + "/messages/show/" + item.lm.id + "\">" + item.lm.sender.username + ": " + message + "</a>\n            </div>\n\n            <div class=\"messages-item-date\" title=\"" + item.lm.created_at + "\">\n                " + item.lm.diffForHumans + "\n            </div>\n        </div>\n    ";
-  return html;
-};
-
-window.renderUserItem = function (item) {
-  var html = "\n    <div class=\"geo-user\">\n        <div class=\"geo-user-avatar\">\n            <a href=\"" + window.location.origin + "/u/" + item.id + "\"><img src=\"" + window.location.origin + "/gfx/avatars/" + item.avatar + "\" alt=\"avatar\"/></a>\n        </div>\n\n        <div class=\"geo-user-info\">\n            <div class=\"geo-user-info-name\"><a href=\"" + window.location.origin + "/u/" + item.id + "\">" + item.username + "</a></div>\n            <div class=\"geo-user-info-distance\">~" + Math.round(item.distance) + " KM</div>\n        </div>\n    </div>\n    ";
-  return html;
-};
-
-window.renderFavoriteItem = function (item) {
-  var avatar = '';
-
-  if (item.type === 'ENT_HASHTAG') {
-    if (item.avatar !== null) {
-      avatar = '<img src="' + window.location.origin + '/gfx/posts/' + item.avatar + '" width="32" height="32"/>';
-    } else {
-      avatar = '&nbsp;<i class="fas fa-hashtag fa-lg"></i>&nbsp;&nbsp';
-    }
-  } else if (item.type === 'ENT_USER') {
-    avatar = '<img src="' + window.location.origin + '/gfx/avatars/' + item.avatar + '" width="32" height="32"/>';
-  }
-
-  var userinfo = '';
-
-  if (item.type === 'ENT_HASHTAG') {
-    userinfo = '<a href="' + window.location.origin + '/t/' + item.name + '">#' + item.short_name + '</a>';
-  } else if (item.type === 'ENT_USER') {
-    userinfo = '<a href="' + window.location.origin + '/u/' + item.name + '">@' + item.short_name + '</a>';
-  }
-
-  var html = "\n        <div class=\"favorites-item is-block favorite-item-" + item.type.toLowerCase() + "-" + item.entityId + "\">\n            <div class=\"favorites-item-left is-inline-block\">\n                <div class=\"favorites-item-left-avatar\">\n                    " + avatar + "\n                </div>\n\n                <div class=\"favorites-item-left-info\">\n                    <div>\n                        " + userinfo + "\n                    </div>\n\n                    <div class=\"is-color-grey\">\n                        " + window.vue.translationTable.statsPosts + ": " + item.total_posts + "\n                    </div>\n                </div>\n            </div>\n\n            <div class=\"favorites-item-right is-inline-block\" onclick=\"deleteFavorite(" + item.id + ", " + item.entityId + ", '" + item.type + "')\"><i class=\"fas fa-times is-pointer\" title=\"" + window.vue.translationTable.remove + "\"></i></div>\n        </div>\n    ";
-  return html;
-};
-
-window.renderMessageItem = function (elem, self) {
-  var align = '';
-
-  if (elem.senderId === self) {
-    align = 'message-align-right';
-  } else {
-    align = 'message-align-left';
-  }
-
-  var html = "\n        <div class=\"message-thread " + align + "\">\n            <div class=\"message-thread-header\">\n                <div class=\"message-thread-header-avatar\">\n                    <a href=\"" + window.location.origin + '/user/' + elem.sender.username + "\"><img src=\"" + window.location.origin + '/gfx/avatars/' + elem.sender.avatar + "\"></a>\n                </div>\n\n                <div class=\"message-thread-header-userinfo\">\n                    <div><a href=\"" + window.location.origin + '/user/' + elem.sender.username + "\">" + elem.sender.username + "</a></div>\n                    <div class=\"is-message-label-small\" title=\"" + elem.created_at + "\">" + elem.diffForHumans + "</div>\n                </div>\n\n                <div class=\"message-thread-header-subject\">" + elem.subject + "</div>\n            </div>\n\n            <div class=\"message-thread-text\">" + elem.message + "</div>\n        </div>\n    ";
-  return html;
-};
-
-window.renderProfileItem = function (item) {
-  if (item.location === null || item.location === '') {
-    item.location = '-';
-  }
-
-  var genderIcon = '<i class="fas fa-genderless"></i>';
-
-  if (item.gender == 1) {
-    genderIcon = '<i class="fas fa-mars"></i>';
-  } else if (item.gender == 2) {
-    genderIcon = '<i class="fas fa-venus"></i>';
-  } else if (item.gender == 3) {
-    genderIcon = '<i class="fas fa-transgender-alt"></i>';
-  }
-
-  var html = "\n    <div class=\"profile-user\">\n        <div class=\"profile-user-avatar\">\n            <a href=\"" + window.location.origin + "/u/" + item.id + "\"><img src=\"" + window.location.origin + "/gfx/avatars/" + item.avatar + "\" alt=\"avatar\"/></a>\n        </div>\n\n        <div class=\"profile-user-info\">\n            <div class=\"profile-user-info-name\"><a href=\"" + window.location.origin + "/u/" + item.id + "\">" + item.username + "</a></div>\n            <div class=\"profile-user-info-baseinfo\">" + genderIcon + ' ' + item.genderStr + " | <i class=\"fas fa-star-of-life\"></i> " + item.age + " | <i class=\"fas fa-map-marker-alt\"></i> " + item.location + "</div>\n        </div>\n    </div>\n    ";
-  return html;
-};
-
-window.renderForumItem = function (item) {
-  var lastPoster = '';
-
-  if (item.lastUser !== null) {
-    lastPoster = "\n            <div class=\"last-poster is-pointer\" onclick=\"location.href = '" + window.location.origin + '/forum/thread/' + item.lastUser.threadId + "/show';\">\n                <div class=\"last-poster-avatar\"><img src=\"" + window.location.origin + '/gfx/avatars/' + item.lastUser.avatar + "\" alt=\"avatar\"></div>\n                <div class=\"last-poster-userdata\">\n                    <div class=\"last-poster-name \">" + item.lastUser.username + "</div>\n                    <div class=\"last-poster-date\">" + item.lastUser.diffForHumans + "</div>\n                </div>\n            </div>\n        ";
-  }
-
-  var html = "\n        <div class=\"forum-item\">\n            <div class=\"forum-title\">\n                <div class=\"is-pointer is-breakall is-width-73-percent\" onclick=\"location.href = '" + window.location.origin + '/forum/' + item.id + "/show';\">" + item.name + "</div>\n                " + lastPoster + "\n            </div>\n            <div class=\"forum-description is-pointer is-breakall\" onclick=\"location.href = '" + window.location.origin + '/forum/' + item.id + "/show';\">" + item.description + "</div>\n        </div>\n    ";
-  return html;
-};
-
-window.renderForumThreadItem = function (item) {
-  var flags = '';
-
-  if (item.sticky) {
-    flags += '<i class="fas fa-thumbtack"></i> ';
-  }
-
-  if (item.locked) {
-    flags += '<i class="fas fa-lock"></i> ';
-  }
-
-  var html = "\n        <div class=\"forum-thread\">\n            <div class=\"forum-thread-infos\">\n                <div class=\"forum-thread-info-id\">#" + item.id + "</div>\n                <div class=\"forum-thread-info-title is-breakall is-pointer\" onclick=\"location.href = '" + window.location.origin + '/forum/thread/' + item.id + "/show';\">" + flags + ' ' + item.title + "</div>\n                <div class=\"forum-thread-info-lastposter\">\n                    <div class=\"forum-thread-info-lastposter-avatar\"><a href=\"" + window.location.origin + '/u/' + item.user.id + "\"><img src=\"" + window.location.origin + '/gfx/avatars/' + item.user.avatar + "\" alt=\"avatar\"/></a></div>\n                    <div class=\"forum-thread-info-lastposter-userinfo\">\n                        <div class=\"forum-thread-info-lastposter-userinfo-name\"><a href=\"" + window.location.origin + '/u/' + item.user.id + "\">" + item.user.username + "</a></div>\n                        <div class=\"forum-thread-info-lastposter-userinfo-date\">" + item.user.diffForHumans + "</div>\n                    </div>\n                </div>\n            </div>\n        </div>\n    ";
-  return html;
-};
-
-window.renderForumPostingItem = function (item) {
-  var admin = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
-  var owner = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
-  var adminCode = '';
-
-  if (admin) {
-    adminCode = " | <a href=\"javascript:void(0);\" onclick=\"window.lockForumPost(" + item.id + ");\">" + window.vue.translationTable.lock + "</a>";
-  }
-
-  if (admin && !owner) {
-    owner = true;
-  }
-
-  var ownerCode = '';
-
-  if (owner) {
-    ownerCode = " | <a href=\"javascript:void(0);\" onclick=\"document.getElementById('forum-post-id').value = '" + item.id + "'; window.quillEditorPostEdit.setContents(window.quillEditorPostEdit.clipboard.convert(document.getElementById('forum-posting-message-" + item.id + "').innerHTML)); window.vue.bShowEditForumPost = true;\">" + window.vue.translationTable.edit + "</a>";
-  }
-
-  if (item.locked) {
-    item.message = '<i class="is-color-grey">' + item.message + '</i>';
-  }
-
-  var editedInfo = '';
-
-  if (item.created_at !== item.updated_at && !item.locked) {
-    editedInfo = '<br/><i class="is-color-grey is-font-small">' + window.vue.translationTable.forumPostEdited + ' ' + item.updatedAtDiff + '</i>';
-  }
-
-  var html = "\n        <div class=\"forum-posting\">\n            <div class=\"forum-posting-userinfo\">\n                <div class=\"forum-posting-userinfo-avatar\"><a href=\"" + window.location.origin + '/u/' + item.user.id + "\"><img src=\"" + window.location.origin + '/gfx/avatars/' + item.user.avatar + "\" alt=\"avatar\"/></a></div>\n                <div class=\"forum-posting-userinfo-name\"><a href=\"" + window.location.origin + '/u/' + item.user.id + "\">" + item.user.username + "</a></div>\n            </div>\n\n            <div class=\"forum-posting-message\">\n                <div class=\"forum-posting-message-content is-breakall\">\n                    <div id=\"forum-posting-message-" + item.id + "\">" + item.message + "</div> " + editedInfo + "\n                </div>\n\n                <div class=\"forum-posting-message-footer\">\n                    <span class=\"is-color-grey\" title=\"" + item.created_at + "\">" + item.diffForHumans + "</span> | <a href=\"javascript:void(0);\" onclick=\"window.reportForumPost(" + item.id + ")\">" + window.vue.translationTable.report + "</a>" + adminCode + " " + ownerCode + "\n                </div>\n            </div>\n        </div>\n    ";
-  return html;
-};
-
-window.reportPost = function (id) {
-  window.vue.ajaxRequest('post', window.location.origin + '/p/' + id + '/report', {}, function (response) {
-    if (response.code === 200) {
-      alert(window.vue.translationTable.postReported);
-    }
-  });
-};
-
-window.showEditComment = function (elemId) {
-  document.getElementById('editCommentId').value = elemId;
-  document.getElementById('editCommentText').value = document.getElementById('thread-text-' + elemId).innerHTML;
-  window.vue.bShowEditComment = true;
-};
-
-window.editComment = function (elemId, text) {
-  var oldContent = document.getElementById('thread-text-' + elemId).innerHTML;
-  document.getElementById('thread-text-' + elemId).innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-  window.vue.ajaxRequest('post', window.location.origin + '/comment/edit', {
-    comment: elemId,
-    text: text
-  }, function (response) {
-    if (response.code === 200) {
-      document.getElementById('thread-text-' + elemId).innerHTML = text;
-    } else {
-      document.getElementById('thread-text-' + elemId).innerHTML = oldContent;
-      alert(response.msg);
-    }
-  });
-};
-
-window.deleteComment = function (elemId) {
-  if (confirm('Do you really want to delete this comment?')) {
-    window.vue.ajaxRequest('post', window.location.origin + '/comment/delete', {
-      comment: elemId
-    }, function (response) {
-      if (response.code === 200) {
-        document.getElementById('thread-' + elemId).remove();
-      } else {
-        alert(response.msg);
-      }
-    });
-  }
-};
-
-window.reportComment = function (elemId) {
-  window.vue.ajaxRequest('post', window.location.origin + '/comment/report', {
-    comment: elemId
-  }, function (response) {
-    alert(response.msg);
-  });
-};
-
-window.reportProfile = function (elemId) {
-  window.vue.ajaxRequest('get', window.location.origin + '/u/' + elemId + '/report', {}, function (response) {
-    alert(response.msg);
-  });
-};
-
-window.reportTag = function (elemId) {
-  window.vue.ajaxRequest('get', window.location.origin + '/t/' + elemId + '/report', {}, function (response) {
-    alert(response.msg);
-  });
-};
-
-window.reportForumPost = function (elemId) {
-  window.vue.ajaxRequest('get', window.location.origin + '/forum/thread/post/' + elemId + '/report', {}, function (response) {
-    alert(response.msg);
-  });
-};
-
-window.addFavorite = function (entityId, type) {
-  var entityName = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : '';
-  window.vue.ajaxRequest('post', window.location.origin + '/f/add', {
-    entityId: entityId,
-    entType: type
-  }, function (response) {
-    if (response.code === 200) {
-      var elems = document.getElementsByClassName('favorite-' + type.toLowerCase());
-
-      for (var i = 0; i < elems.length; i++) {
-        elems[i].innerHTML = '<a href="javascript:void(0)" onclick="removeFavorite(' + entityId + ', \'' + type + '\', \'' + entityName + '\')">' + window.vue.translationTable.removeFav + '</a>';
-      }
-
-      var link = '';
-
-      if (type === 'ENT_HASHTAG') {
-        link = '<a href="' + window.location.origin + '/t/' + entityName + '">#' + response.fav.short_name + '</a>';
-      } else if (type === 'ENT_USER') {
-        link = '<a href="' + window.location.origin + '/u/' + entityName + '">@' + response.fav.short_name + '</a>';
-      }
-
-      var avatar = '';
-
-      if (type === 'ENT_HASHTAG') {
-        if (response.avatar !== null) {
-          avatar = '<img src = "' + window.location.origin + '/gfx/posts/' + response.fav.avatar + '" width = "32" height = "32"/>';
-        } else {
-          avatar = '&nbsp;<i class="fas fa-hashtag fa-lg" ></i>&nbsp;&nbsp;';
-        }
-      } else if (type === 'ENT_USER') {
-        avatar = '<img src = "' + window.location.origin + '/gfx/avatars/' + response.fav.avatar + '" width = "32" height = "32"/>';
-      }
-
-      var html = "\n            <div class=\"favorites-item is-block favorite-item-" + type.toLowerCase() + "-" + entityId + "\">\n                <div class=\"favorites-item-left is-inline-block\">\n                    <div class=\"favorites-item-left-avatar\">\n                        " + avatar + "\n                    </div>\n\n                    <div class=\"favorites-item-left-info\">\n                        <div class=\"\">\n                            " + link + "\n                        </div>\n\n                        <div class=\"is-color-grey\">\n                            " + response.fav.total_posts + " total posts\n                        </div>\n                    </div>\n                </div>\n\n                <div class=\"favorites-item-right is-inline-block\"><i onclick=\"deleteFavorite(" + response.fav.id + ", " + entityId + ", '" + type + "')\" class=\"fas fa-times is-pointer\" title=\"Remove\"></i></div>\n            </div>\n          ";
-      elems = document.getElementsByClassName('favorites-list');
-
-      for (var _i = 0; _i < elems.length; _i++) {
-        elems[_i].innerHTML += html;
-      }
-
-      elems = document.getElementsByClassName('has-no-favorites-yet');
-
-      while (elems.length > 0) {
-        elems[0].remove();
-      }
-    }
-  });
-};
-
-window.removeFavorite = function (entityId, type) {
-  var entityName = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : '';
-  window.vue.ajaxRequest('post', window.location.origin + '/f/remove', {
-    entityId: entityId,
-    entType: type
-  }, function (response) {
-    if (response.code === 200) {
-      var elems = document.getElementsByClassName('favorite-' + type.toLowerCase());
-
-      for (var i = 0; i < elems.length; i++) {
-        elems[i].innerHTML = '<a href="javascript:void(0)" onclick="addFavorite(' + entityId + ', \'' + type + '\', \'' + entityName + '\')">' + window.vue.translationTable.addFav + '</a>';
-      }
-
-      elems = document.getElementsByClassName('favorite-item-' + type.toLowerCase() + '-' + entityId);
-
-      while (elems.length > 0) {
-        elems[0].remove();
-      }
-
-      elems = document.getElementsByClassName('favorites-item');
-
-      if (elems.length === 0) {
-        elems = document.getElementsByClassName('favorites-list');
-
-        for (var _i2 = 0; _i2 < elems.length; _i2++) {
-          elems[_i2].innerHTML += '<i class="has-no-favorites-yet">' + window.vue.translationTable.noFavsYet + '</i>';
-        }
-      }
-    }
-  });
-};
-
-window.deleteFavorite = function (id, eid, type) {
-  window.vue.ajaxRequest('post', window.location.origin + '/f/remove', {
-    entityId: eid,
-    entType: type
-  }, function (response) {
-    if (response.code === 200) {
-      var elems = document.getElementsByClassName('favorite-item-' + type.toLowerCase() + '-' + eid);
-
-      while (elems.length > 0) {
-        elems[0].remove();
-      }
-
-      elems = document.getElementsByClassName('favorites-item');
-
-      if (elems.length === 0) {
-        elems = document.getElementsByClassName('favorites-list');
-
-        for (var i = 0; i < elems.length; i++) {
-          elems[i].innerHTML += '<i class="has-no-favorites-yet">' + window.vue.translationTable.noFavsYet + '</i>';
-        }
-      }
-    }
-  });
-};
-
-window.clearPushIndicator = function (obj1, obj2) {
-  if (obj1.classList.contains('is-hearted')) {
-    obj1.classList.remove('fas', 'is-hearted');
-    obj1.classList.add('far');
-    obj1.setAttribute('title', 'Notifications');
-  }
-
-  obj2.style.display = 'none';
-};
-
-window.toggleNotifications = function (ident) {
-  var obj = document.getElementById(ident);
-
-  if (obj) {
-    if (obj.style.display === 'block') {
-      obj.style.display = 'none';
-    } else {
-      obj.style.display = 'block';
-    }
-  }
-};
-
-window.markSeen = function () {
-  window.vue.ajaxRequest('get', window.location.origin + '/notifications/mark', {}, function (response) {
-    if (response.code != 200) {
-      console.error(response);
-    }
-  });
-};
-
-window.lockPost = function (id) {
-  if (confirm(window.vue.translationTable.confirmLockPost)) {
-    window.vue.ajaxRequest('get', window.location.origin + '/p/' + id + '/lock', {}, function (response) {
-      alert(response.msg);
-    });
-  }
-};
-
-window.toggleNsfw = function (id) {
-  if (confirm(window.vue.translationTable.confirmToggleNsfw)) {
-    window.vue.ajaxRequest('get', window.location.origin + '/p/' + id + '/togglensfw', {}, function (response) {
-      alert(response.msg);
-    });
-  }
-};
-
-window.lockHashtag = function (id) {
-  if (confirm(window.vue.translationTable.confirmLockHashtag)) {
-    window.vue.ajaxRequest('get', window.location.origin + '/t/' + id + '/lock', {}, function (response) {
-      alert(response.msg);
-    });
-  }
-};
-
-window.lockUser = function (id) {
-  var self = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
-
-  if (confirm(window.vue.translationTable.confirmLockUser)) {
-    window.vue.ajaxRequest('get', window.location.origin + '/u/' + id + '/deactivate', {}, function (response) {
-      alert(response.msg);
-
-      if (typeof response.logout !== 'undefined' && response.logout) {
-        location.reload();
-      }
-    });
-  }
-};
-
-window.lockForumPost = function (id) {
-  if (confirm(window.vue.translationTable.confirmLockForumPost)) {
-    window.vue.ajaxRequest('get', window.location.origin + '/forum/thread/post/' + id + '/lock', {}, function (response) {
-      alert(response.msg);
-    });
-  }
-};
-
-window.deleteUserAccount = function () {
-  var pw = prompt(window.vue.translationTable.confirmDeleteOwnAccount);
-
-  if (pw.length > 0) {
-    window.vue.ajaxRequest('post', window.location.origin + '/u/deleteownaccount', {
-      password: pw
-    }, function (response) {
-      alert(response.msg);
-
-      if (response.code == 200) {
-        location.reload();
-      }
-    });
-  }
-};
-
-window.lockComment = function (id) {
-  if (confirm(window.vue.translationTable.confirmLockComment)) {
-    window.vue.ajaxRequest('get', window.location.origin + '/c/' + id + '/lock', {}, function (response) {
-      alert(response.msg);
-    });
-  }
-};
-
-window.toggleOverlay = function (name) {
-  var obj = document.getElementById('overlay-' + name);
-
-  if (obj.style.display === 'none' || obj.style.display == '') {
-    obj.style.display = 'unset';
-  } else {
-    obj.style.display = 'none';
-  }
-};
-
-window.setTheme = function (theme) {
-  if (theme !== null && typeof theme === 'string' && theme.length > 0) {
-    var expDate = new Date(Date.now() + 1000 * 60 * 60 * 24 * 365);
-    document.cookie = 'theme=' + theme + '; expires=' + expDate.toUTCString() + '; path=/;';
-    location.reload();
-  }
-};
-
-window.fetchStorySelection = function () {
-  window.vue.ajaxRequest('get', window.location.origin + '/stories/selection', {}, function (response) {
-    if (response.code === 200) {
-      response.data.forEach(function (elem, index) {
-        var html = "\n               <div class=\"stories-item\" id=\"story-item-" + elem.user.id + "\">\n                    <div class=\"stories-item-avatar\" id=\"stories-item-" + elem.user.id + "\">\n                        <img src=\"" + window.location.origin + '/gfx/avatars/' + elem.user.avatar + "\" onclick=\"window.viewStory(" + elem.user.id + ", " + (elem.is_self ? 'true' : 'false') + ")\"/>\n                    </div>\n\n                    <div class=\"stories-item-username\">\n                        " + (elem.user.username.length > 8 ? elem.user.username.substr(0, 7) + '...' : elem.user.username) + "\n                    </div>\n                </div>\n               ";
-        document.getElementById('stories').innerHTML += html;
-      });
-    } else {
-      document.getElementById('stories').innerHTML = elem.msg;
-    }
-  });
-};
-
-window.viewStory = function (userId) {
-  var is_self = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
-  window.currentStoryData = null;
-  var orig = document.getElementById('stories-item-' + userId).innerHTML;
-  document.getElementById('stories-item-' + userId).innerHTML = '&nbsp;&nbsp;<i class="fas fa-spinner fa-spin"></i>';
-
-  if (!is_self) {
-    document.getElementById('story-delete-action').classList.add('is-hidden');
-  } else {
-    document.getElementById('story-delete-action').classList.remove('is-hidden');
-  }
-
-  window.vue.ajaxRequest('get', window.location.origin + '/stories/view/' + userId, {}, function (response) {
-    document.getElementById('stories-item-' + userId).innerHTML = orig;
-
-    if (response.code === 200) {
-      window.currentStoryData = response.data;
-      window.currentStoryIndex = 0;
-      window.showStoryPost(window.currentStoryIndex);
-      document.getElementById('story-title').innerHTML = 'Story';
-      window.vue.bShowViewStory = true;
-
-      if (!is_self) {
-        document.getElementById('story-item-' + userId).remove();
-      }
-    } else {
-      alert(response.msg);
-    }
-  });
-};
-
-window.showStoryPost = function (index) {
-  if (window.currentStoryData !== null && index >= 0 && index < window.currentStoryData.length) {
-    if (window.currentStoryData[index].type === 1) {
-      document.getElementById('story-content').style.backgroundColor = 'unset';
-      document.getElementById('story-content').style.backgroundImage = 'url(' + window.location.origin + '/gfx/stories/' + window.currentStoryData[index].background + ')';
-      document.getElementById('story-content').style.backgroundSize = 'contain';
-      document.getElementById('story-content').style.backgroundRepeat = 'no-repeat';
-    } else {
-      document.getElementById('story-content').style.backgroundImage = 'unset';
-      document.getElementById('story-content').style.backgroundSize = 'unset';
-      document.getElementById('story-content').style.backgroundRepeat = 'unset';
-      document.getElementById('story-content').style.backgroundColor = window.currentStoryData[index].background;
-    }
-
-    document.getElementById('story-message').innerHTML = window.currentStoryData[index].message;
-    document.getElementById('story-message').style.color = window.currentStoryData[index].text_color;
-    document.getElementById('story-delete-action').setAttribute('data-story-id', window.currentStoryData[index].id);
-  }
-};
-
-window.postStory = function () {
-  if (window.addStoryTabPage === 1) {
-    window.vue.ajaxRequest('post', window.location.origin + '/stories/add/image', {
-      image: document.getElementById('story-add-file-name').value,
-      message: document.getElementById('story-add-file-text').value,
-      color: document.getElementById('story-add-file-color').value
-    }, function (response) {
-      alert(response.msg);
-
-      if (response.code === 200) {
-        window.vue.bShowAddStory = false;
-      }
-    });
-  } else if (window.addStoryTabPage === 2) {
-    window.vue.ajaxRequest('post', window.location.origin + '/stories/add/text', {
-      message: document.getElementById('story-add-message-text').value,
-      color: document.getElementById('story-add-message-color').value,
-      bgcolor: document.getElementById('story-add-message-bgcolor').value
-    }, function (response) {
-      alert(response.msg);
-
-      if (response.code === 200) {
-        window.vue.bShowAddStory = false;
-      }
-    });
-  }
-};
-
-window.setStoryImage = function (obj) {
-  var formData = new FormData();
-  formData.append('image', obj.files[0]);
-  document.getElementById('add-story-content').innerHTML = '<div id="add-story-message"><i class="fas fa-spinner fa-spin"></i></div>';
-  window.vue.ajaxRequest('post', window.location.origin + '/stories/image/upload', formData, function (response) {
-    if (response.code === 200) {
-      document.getElementById('add-story-content').innerHTML = '<div id="add-story-message">';
-      document.getElementById('story-add-file-name').value = response.name;
-      document.getElementById('add-story-content').style.backgroundImage = 'url(' + window.location.origin + '/gfx/stories/' + response.name + ')';
-      document.getElementById('add-story-content').style.backgroundSize = 'contain';
-      document.getElementById('add-story-content').style.backgroundRepeat = 'no-repeat';
-    } else {
-      alert(response.msg);
-    }
-  }, function () {}, {
-    headers: {
-      'Content-Type': 'multipart/form-data'
-    }
-  });
-};
-
-window.clearStoryInput = function () {
-  document.getElementById('add-story-message').innerHTML = '';
-  document.getElementById('add-story-content').style.backgroundImage = 'unset';
-  document.getElementById('add-story-content').style.backgroundColor = 'unset';
-  document.getElementById('story-add-file-file').value = '';
-  document.getElementById('story-add-file-text').value = '';
-  document.getElementById('story-add-message-text').value = '';
-};
-
-window.deleteStory = function (id) {
-  window.vue.ajaxRequest('get', window.location.origin + '/stories/' + id + '/delete', {}, function (response) {
-    alert(response.msg);
-  });
-};
-
-window.showUsernameValidity = function (username, hint) {
-  var currentName = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : '';
-  window.vue.ajaxRequest('get', window.location.origin + '/member/username/valid?ident=' + username, {}, function (response) {
-    if (response.code == 200) {
-      if (currentName !== '' && username === currentName) {
-        hint.innerHTML = '';
-      } else if (!response.data.valid) {
-        hint.classList.add('is-danger');
-        hint.classList.remove('is-success');
-        hint.innerHTML = window.vue.translationTable.invalidUsername;
-      } else if (!response.data.available) {
-        hint.classList.add('is-danger');
-        hint.classList.remove('is-success');
-        hint.innerHTML = window.vue.translationTable.nonavailableUsername;
-      } else if (response.data.valid && response.data.available) {
-        hint.classList.remove('is-danger');
-        hint.classList.add('is-success');
-        hint.innerHTML = window.vue.translationTable.usernameOk;
-      }
-    }
-  });
-};
-
-window.showPasswordMatching = function (pw1, pw2, hint) {
-  if (pw1.length > 0 || pw2.length > 0) {
-    if (pw1 !== pw2) {
-      hint.classList.remove('is-success');
-      hint.classList.add('is-danger');
-      hint.innerHTML = window.vue.translationTable.passwordMismatching;
-    } else {
-      hint.classList.add('is-success');
-      hint.classList.remove('is-danger');
-      hint.innerHTML = window.vue.translationTable.passwordMatching;
-    }
-  }
-};
-
-window.toggleDropdown = function (obj) {
-  if (obj) {
-    obj.classList.toggle('is-hidden');
-  }
-}; //Make vue instance available globally
-
-
-window.vue = vue;
 
 /***/ }),
 
@@ -20381,6 +19646,17 @@ process.chdir = function (dir) {
 process.umask = function() { return 0; };
 
 
+/***/ }),
+
+/***/ "./node_modules/axios/package.json":
+/*!*****************************************!*\
+  !*** ./node_modules/axios/package.json ***!
+  \*****************************************/
+/***/ ((module) => {
+
+"use strict";
+module.exports = JSON.parse('{"_from":"axios@^0.21","_id":"axios@0.21.4","_inBundle":false,"_integrity":"sha512-ut5vewkiu8jjGBdqpM44XxjuCjq9LAKeHVmoVfHVzy8eHgxxq8SbAVQNovDA8mVi05kP0Ea/n/UzcSHcTJQfNg==","_location":"/axios","_phantomChildren":{},"_requested":{"type":"range","registry":true,"raw":"axios@^0.21","name":"axios","escapedName":"axios","rawSpec":"^0.21","saveSpec":null,"fetchSpec":"^0.21"},"_requiredBy":["#DEV:/"],"_resolved":"https://registry.npmjs.org/axios/-/axios-0.21.4.tgz","_shasum":"c67b90dc0568e5c1cf2b0b858c43ba28e2eda575","_spec":"axios@^0.21","_where":"E:\\\\Projects\\\\dnyWebFwDb","author":{"name":"Matt Zabriskie"},"browser":{"./lib/adapters/http.js":"./lib/adapters/xhr.js"},"bugs":{"url":"https://github.com/axios/axios/issues"},"bundleDependencies":false,"bundlesize":[{"path":"./dist/axios.min.js","threshold":"5kB"}],"dependencies":{"follow-redirects":"^1.14.0"},"deprecated":false,"description":"Promise based HTTP client for the browser and node.js","devDependencies":{"coveralls":"^3.0.0","es6-promise":"^4.2.4","grunt":"^1.3.0","grunt-banner":"^0.6.0","grunt-cli":"^1.2.0","grunt-contrib-clean":"^1.1.0","grunt-contrib-watch":"^1.0.0","grunt-eslint":"^23.0.0","grunt-karma":"^4.0.0","grunt-mocha-test":"^0.13.3","grunt-ts":"^6.0.0-beta.19","grunt-webpack":"^4.0.2","istanbul-instrumenter-loader":"^1.0.0","jasmine-core":"^2.4.1","karma":"^6.3.2","karma-chrome-launcher":"^3.1.0","karma-firefox-launcher":"^2.1.0","karma-jasmine":"^1.1.1","karma-jasmine-ajax":"^0.1.13","karma-safari-launcher":"^1.0.0","karma-sauce-launcher":"^4.3.6","karma-sinon":"^1.0.5","karma-sourcemap-loader":"^0.3.8","karma-webpack":"^4.0.2","load-grunt-tasks":"^3.5.2","minimist":"^1.2.0","mocha":"^8.2.1","sinon":"^4.5.0","terser-webpack-plugin":"^4.2.3","typescript":"^4.0.5","url-search-params":"^0.10.0","webpack":"^4.44.2","webpack-dev-server":"^3.11.0"},"homepage":"https://axios-http.com","jsdelivr":"dist/axios.min.js","keywords":["xhr","http","ajax","promise","node"],"license":"MIT","main":"index.js","name":"axios","repository":{"type":"git","url":"git+https://github.com/axios/axios.git"},"scripts":{"build":"NODE_ENV=production grunt build","coveralls":"cat coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js","examples":"node ./examples/server.js","fix":"eslint --fix lib/**/*.js","postversion":"git push && git push --tags","preversion":"npm test","start":"node ./sandbox/server.js","test":"grunt test","version":"npm run build && grunt version && git add -A dist && git add CHANGELOG.md bower.json package.json"},"typings":"./index.d.ts","unpkg":"dist/axios.min.js","version":"0.21.4"}');
+
 /***/ })
 
 /******/ 	});
@@ -20440,7 +19716,8 @@ process.umask = function() { return 0; };
 /******/ 				}
 /******/ 				if(fulfilled) {
 /******/ 					deferred.splice(i--, 1)
-/******/ 					result = fn();
+/******/ 					var r = fn();
+/******/ 					if (r !== undefined) result = r;
 /******/ 				}
 /******/ 			}
 /******/ 			return result;
@@ -20514,19 +19791,21 @@ process.umask = function() { return 0; };
 /******/ 			// add "moreModules" to the modules object,
 /******/ 			// then flag all "chunkIds" as loaded and fire callback
 /******/ 			var moduleId, chunkId, i = 0;
-/******/ 			for(moduleId in moreModules) {
-/******/ 				if(__webpack_require__.o(moreModules, moduleId)) {
-/******/ 					__webpack_require__.m[moduleId] = moreModules[moduleId];
+/******/ 			if(chunkIds.some((id) => (installedChunks[id] !== 0))) {
+/******/ 				for(moduleId in moreModules) {
+/******/ 					if(__webpack_require__.o(moreModules, moduleId)) {
+/******/ 						__webpack_require__.m[moduleId] = moreModules[moduleId];
+/******/ 					}
 /******/ 				}
+/******/ 				if(runtime) var result = runtime(__webpack_require__);
 /******/ 			}
-/******/ 			if(runtime) var result = runtime(__webpack_require__);
 /******/ 			if(parentChunkLoadingFunction) parentChunkLoadingFunction(data);
 /******/ 			for(;i < chunkIds.length; i++) {
 /******/ 				chunkId = chunkIds[i];
 /******/ 				if(__webpack_require__.o(installedChunks, chunkId) && installedChunks[chunkId]) {
 /******/ 					installedChunks[chunkId][0]();
 /******/ 				}
-/******/ 				installedChunks[chunkIds[i]] = 0;
+/******/ 				installedChunks[chunkId] = 0;
 /******/ 			}
 /******/ 			return __webpack_require__.O(result);
 /******/ 		}

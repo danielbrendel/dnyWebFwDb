@@ -135,5 +135,11 @@ window.vue = new Vue({
             document.getElementById('flash-success').style.display = 'inherit';
             setTimeout(function() { document.getElementById('flash-success').style.display = 'none'; }, 3500);
         },
+
+        toggleDropdown: function(obj) {
+            if (obj) {
+                obj.classList.toggle('is-hidden');
+            }
+        }
     }
 });

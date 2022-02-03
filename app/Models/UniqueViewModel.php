@@ -30,7 +30,7 @@ class UniqueViewModel extends Model
     {
         try {
             $count = 0;
-            $ipAddress = request()->ip();
+            $ipAddress = md5(request()->ip());
 
             $item = static::where('frameworkId', '=', $id)->where('address', '=', $ipAddress)->first();
             if (!$item) {

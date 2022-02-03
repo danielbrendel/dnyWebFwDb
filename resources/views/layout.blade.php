@@ -22,8 +22,17 @@
     </head>
 
     <body>
-        <div id="app">
-            @yield('content')
-        </div>
+        <main id="main">
+            @include('navbar')
+
+            <div class="content">
+                @yield('content')
+            </div>
+
+            @include('about')
+            @include('footer')
+        </main>
+
+        <script src="{{ asset('js/app.js') }}"></script>
     </body>
 </html>
