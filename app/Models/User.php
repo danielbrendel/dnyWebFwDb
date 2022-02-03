@@ -109,6 +109,22 @@ class User extends Authenticatable
     }
 
     /**
+     * Indicate if user is admin
+     * 
+     * @param $id
+     * @return bool
+     * @throws \Exception
+     */
+    public static function isAdmin($id)
+    {
+        try {
+            return static::where('id', '=', $id)->first()->admin;
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
+
+    /**
      * Return if string is a valid identifier for user name
      * 
      * @param $ident

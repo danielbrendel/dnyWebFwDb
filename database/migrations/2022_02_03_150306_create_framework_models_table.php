@@ -15,6 +15,7 @@ class CreateFrameworkModelsTable extends Migration
     {
         Schema::create('framework_models', function (Blueprint $table) {
             $table->id();
+            $table->string('slug');
             $table->string('name');
             $table->integer('userId');
             $table->integer('langId');
@@ -25,6 +26,8 @@ class CreateFrameworkModelsTable extends Migration
             $table->string('github');
             $table->string('website');
             $table->string('twitter');
+            $table->integer('hearts')->default(0);
+            $table->boolean('locked')->default(false);
             $table->timestamps();
         });
     }
