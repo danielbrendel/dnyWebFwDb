@@ -5,6 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * Class ImageModel
+ * 
+ * Image manipulation manager
+ */
 class ImageModel extends Model
 {
     use HasFactory;

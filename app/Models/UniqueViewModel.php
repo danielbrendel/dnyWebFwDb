@@ -5,6 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * Class UniqueViewModel
+ * 
+ * Manager of unique framework view counting
+ */
 class UniqueViewModel extends Model
 {
     use HasFactory;

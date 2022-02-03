@@ -10,6 +10,11 @@ use Laravel\Sanctum\HasApiTokens;
 use App\Models\PushModel;
 use App\Models\MailerModel;
 
+/**
+ * Class User
+ * 
+ * Interface to user management
+ */
 class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;

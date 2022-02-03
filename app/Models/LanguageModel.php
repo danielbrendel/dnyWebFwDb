@@ -5,6 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * Class LanguageModel
+ * 
+ * Interface to framework languages
+ */
 class LanguageModel extends Model
 {
     use HasFactory;

@@ -6,6 +6,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\FrameworkModel;
 
+/**
+ * Class HeartModel
+ * 
+ * Management of framework item likes
+ */
 class HeartModel extends Model
 {
     use HasFactory;

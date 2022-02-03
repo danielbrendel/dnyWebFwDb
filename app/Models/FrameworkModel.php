@@ -7,6 +7,11 @@ use Illuminate\Database\Eloquent\Model;
 use App\Models\User;
 use App\Models\ImageModel;
 
+/**
+ * Class FrameworkModel
+ * 
+ * Interface to framework item management
+ */
 class FrameworkModel extends Model
 {
     use HasFactory;
