@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Cache;
 
 /**
  * Class UniqueViewModel
@@ -26,7 +27,7 @@ class UniqueViewModel extends Model
      * @return int
      * @throws Exception
      */
-    public static function viewForPost($id)
+    public static function viewForItem($id)
     {
         try {
             $count = 0;

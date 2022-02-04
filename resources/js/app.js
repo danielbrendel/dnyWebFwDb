@@ -140,6 +140,32 @@ window.vue = new Vue({
             if (obj) {
                 obj.classList.toggle('is-hidden');
             }
+        },
+
+        renderFrameworkItem: function(elem) {
+            let html = `
+                <div class="framework-item">
+                    <div class="framework-item-image" style="background-image: url('` + window.location.origin + '/gfx/logos/' + elem.logo + `')"></div>
+
+                    <div class="framework-item-about">
+                        <div class="framework-item-about-title">` + elem.name + `</div>
+                        <div class="framework-item-about-hint">` + elem.summary + `</div>
+                        <div class="framework-item-about-tags">` + elem.tags + `</div>
+                    </div>
+
+                    <div class="framework-item-stats">
+                        <div class="framework-item-stats-hearts">
+                            <i class="fas fa-heart"></i>&nbsp;` + elem.hearts + `
+                        </div>
+
+                        <div class="framework-item-stats-views">
+                            <i class="far fa-eye"></i>&nbsp;` + elem.views + `
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            return html;
         }
     }
 });

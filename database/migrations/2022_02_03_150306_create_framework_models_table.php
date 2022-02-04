@@ -21,6 +21,7 @@ class CreateFrameworkModelsTable extends Migration
             $table->integer('langId');
             $table->string('creator');
             $table->string('logo');
+            $table->string('summary');
             $table->text('description');
             $table->string('tags');
             $table->string('github');

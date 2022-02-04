@@ -151,12 +151,16 @@ class FrameworkModel extends Model
      * @return mixed
      * @throws \Exception
      */
-    public static function queryFrameworks($lang, $sorting = 'latest', $paginate = null, $text_search = null, $tag = null)
+    public static function queryFrameworks($lang = '_all_', $sorting = 'latest', $paginate = null, $text_search = null, $tag = null)
     {
         try {
             static::validateSortingType($sorting);
 
-            $query = static::where('langId', '=', $lang);
+            if ($lang !== '_all_') {
+                $query = static::where('langId', '=', $lang);
+            } else {
+                $query = static::where('langId', '>', 0);
+            }
 
             if ($paginate !== null) {
                 if ($sorting === 'latest') {

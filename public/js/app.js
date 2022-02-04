@@ -2192,6 +2192,10 @@ window.vue = new Vue({
       if (obj) {
         obj.classList.toggle('is-hidden');
       }
+    },
+    renderFrameworkItem: function renderFrameworkItem(elem) {
+      var html = "\n                <div class=\"framework-item\">\n                    <div class=\"framework-item-image\" style=\"background-image: url('" + window.location.origin + '/gfx/logos/' + elem.logo + "')\"></div>\n\n                    <div class=\"framework-item-about\">\n                        <div class=\"framework-item-about-title\">" + elem.name + "</div>\n                        <div class=\"framework-item-about-hint\">" + elem.summary + "</div>\n                        <div class=\"framework-item-about-tags\">" + elem.tags + "</div>\n                    </div>\n\n                    <div class=\"framework-item-stats\">\n                        <div class=\"framework-item-stats-hearts\">\n                            <i class=\"fas fa-heart\"></i>&nbsp;" + elem.hearts + "\n                        </div>\n\n                        <div class=\"framework-item-stats-views\">\n                            <i class=\"far fa-eye\"></i>&nbsp;" + elem.views + "\n                        </div>\n                    </div>\n                </div>\n            ";
+      return html;
     }
   }
 });

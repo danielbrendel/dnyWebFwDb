@@ -34,5 +34,11 @@
         </main>
 
         <script src="{{ asset('js/app.js') }}"></script>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                window.vue.initNavbar();
+            });
+        </script>
+        @yield('javascript')
     </body>
 </html>

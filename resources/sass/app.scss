@@ -1,14 +1,11 @@
-@import url('https://fonts.googleapis.com/css2?family=Dancing+Script&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@300&family=Rubik&display=swap');
 
 html {
     width: 100%;
-    height: 100%;
-    overflow-y: hidden;
 }
 
 body {
     width: 100%;
-    height: 100%;
     margin: 0 auto;
     background-color: rgba(100, 68, 10, 0.3);
 }
@@ -16,11 +13,10 @@ body {
 #main {
     width: 100%;
     height: auto;
-    overflow-y: auto;
 }
 
 .is-title-font {
-    font-family: 'Dancing Script', Verdana, Geneva, Tahoma, sans-serif;
+    font-family: Quicksand, Verdana, Geneva, Tahoma, sans-serif;
     font-size: 1.5em;
     font-weight: bold;
 }
@@ -68,4 +64,61 @@ body {
     @media screen and (min-width: 1194px) {
         transform: translate(-0%, 50%);
     }
+}
+
+.framework-item {
+    position: relative;
+    display: inline-block;
+    background-color: rgb(250, 250, 250);
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+    border-radius: 25px;
+    margin-top: 20px;
+    margin-left: 10px;
+    margin-right: 10px;
+    width: 530px;
+    @media screen and (max-width: 546px) {
+        width: 95%;
+    }
+}
+.framework-item-image {
+    width: 100%;
+    height: 304px;
+    background-repeat: no-repeat;
+    background-size: cover;
+    border-top-left-radius: 25px;
+    border-top-right-radius: 25px;
+}
+.framework-item-about {
+    margin-left: 20px;
+    margin-right: 20px;
+}
+.framework-item-about-title {
+    color: rgb(67, 91, 115);
+    font-weight: bold;
+    font-size: 1.5em;
+    font-family: Rubik, Verdana, Geneva, Tahoma, sans-serif;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+.framework-item-about-hint {
+    color: rgb(67, 91, 115);
+    font-size: 0.9em;
+    font-family: Rubik, Verdana, Geneva, Tahoma, sans-serif;
+}
+.framework-item-about-tags {
+    color: rgb(200, 200, 200);
+    margin-bottom: 20px;
+}
+.framework-item-stats {
+    margin-left: 20px;
+    margin-right: 20px;
+    margin-top: 10px;
+    margin-bottom: 5px;
+}
+.framework-item-stats-hearts {
+    display: inline-block;
+}
+.framework-item-stats-views {
+    display: inline-block;
+    float: right;
 }
