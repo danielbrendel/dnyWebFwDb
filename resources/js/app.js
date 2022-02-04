@@ -143,6 +143,12 @@ window.vue = new Vue({
         },
 
         renderFrameworkItem: function(elem) {
+            let tags = '';
+
+            elem.tags.forEach(function(tag, index){
+                tags += '<span><a href="">#' + tag + '</a>&nbsp;</span>';
+            });
+
             let html = `
                 <div class="framework-item is-pointer" onclick="location.href = '` + window.location.origin + `/view/` + elem.slug + `';">
                     <div class="framework-item-image" style="background-image: url('` + window.location.origin + '/gfx/logos/' + elem.logo + `')"></div>
@@ -150,7 +156,7 @@ window.vue = new Vue({
                     <div class="framework-item-about">
                         <div class="framework-item-about-title">` + elem.name + `</div>
                         <div class="framework-item-about-hint">` + elem.summary + `</div>
-                        <div class="framework-item-about-tags">` + elem.tags + `</div>
+                        <div class="framework-item-about-tags">` + tags + `</div>
                     </div>
 
                     <div class="framework-item-stats">

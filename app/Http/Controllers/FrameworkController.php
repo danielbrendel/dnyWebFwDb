@@ -33,6 +33,7 @@ class FrameworkController extends Controller
                 $item->userData->username = $user->username;
 
                 $item->views = UniqueViewModel::viewCountAsString(UniqueViewModel::viewForItem($item->id));
+                $item->tags = explode(' ', $item->tags);
             }
 
             return response()->json(array('code' => 200, 'data' => $data->toArray()));
@@ -67,7 +68,10 @@ class FrameworkController extends Controller
             $item->github = GithubModel::queryRepoInfo($item->github);
             $item->github->last_commit_diff = Carbon::parse($item->github->pushed_at)->diffForHumans();
             $item->github->commit_day_count = Carbon::parse($item->github->pushed_at)->diff(Carbon::now())->days;
-            
+            $item->github->stargazers_count = GithubModel::countAsString($item->github->stargazers_count);
+            $item->github->forks_count = GithubModel::countAsString($item->github->forks_count);
+            $item->tags = explode(' ', $item->tags);
+
             $user = User::getByAuthId();
             
             $others = FrameworkModel::queryRandom($item->id, $item->langId, env('APP_QUERYRANDOMCOUNT'));
@@ -78,6 +82,7 @@ class FrameworkController extends Controller
                 $other->userData->username = $user->username;
 
                 $other->views = UniqueViewModel::viewCountAsString(UniqueViewModel::viewForItem($other->id));
+                $other->tags = explode(' ', $other->tags);
             }
 
             return view('framework', [
@@ -86,7 +91,6 @@ class FrameworkController extends Controller
                 'others' => $others
             ]);
         } catch (\Exception $e) {
-            dd($e);
             return back()->with('flash.error', $e->getMessage());
         }
     }

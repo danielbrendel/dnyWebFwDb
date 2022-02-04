@@ -26,6 +26,84 @@
             @include('navbar')
 
             <div class="content">
+                @if ($errors->any())
+                    <div id="error-message-1" class="is-z-index-3">
+                        <article class="message is-danger">
+                            <div class="message-header">
+                                <p>{{ __('app.error') }}</p>
+                                <button class="delete" aria-label="delete" onclick="document.getElementById('error-message-1').style.display = 'none';"></button>
+                            </div>
+                            <div class="message-body">
+                                @foreach ($errors->all() as $error)
+                                    {{ $error }}<br/>
+                                @endforeach
+                            </div>
+                        </article>
+                        <br/>
+                    </div>
+                @endif
+
+                @if (Session::has('error'))
+                    <div id="error-message-2" class="is-z-index-3">
+                        <article class="message is-danger">
+                            <div class="message-header">
+                                <p>{{ __('app.error') }}</p>
+                                <button class="delete" aria-label="delete" onclick="document.getElementById('error-message-2').style.display = 'none';"></button>
+                            </div>
+                            <div class="message-body">
+                                {!! Session::get('error') !!}
+                            </div>
+                        </article>
+                        <br/>
+                    </div>
+                @endif
+
+                <div class="flash is-flash-error" id="flash-error">
+                    <p id="flash-error-content">
+                        @if (Session::has('flash.error'))
+                            {!! Session::get('flash.error') !!}
+                        @endif
+                    </p>
+                </div>
+
+                <div class="flash is-flash-success" id="flash-success">
+                    <p id="flash-success-content">
+                        @if (Session::has('flash.success'))
+                            {!! Session::get('flash.success') !!}
+                        @endif
+                    </p>
+                </div>
+
+                @if (Session::has('notice'))
+                    <div id="notice-message" class="is-z-index-3">
+                        <article class="message is-info">
+                            <div class="message-header">
+                                <p>{{ __('app.notice') }}</p>
+                                <button class="delete" aria-label="delete" onclick="document.getElementById('notice-message').style.display = 'none';"></button>
+                            </div>
+                            <div class="message-body">
+                                {!! Session::get('notice') !!}
+                            </div>
+                        </article>
+                        <br/>
+                    </div>
+                @endif
+
+                @if (Session::has('success'))
+                    <div id="success-message" class="is-z-index-3">
+                        <article class="message is-success">
+                            <div class="message-header">
+                                <p>{{ __('app.success') }}</p>
+                                <button class="delete" aria-label="delete" onclick="document.getElementById('success-message').style.display = 'none';"></button>
+                            </div>
+                            <div class="message-body">
+                                {!! Session::get('success') !!}
+                            </div>
+                        </article>
+                        <br/>
+                    </div>
+                @endif
+
                 @yield('content')
             </div>
 
@@ -37,6 +115,14 @@
         <script>
             document.addEventListener('DOMContentLoaded', function() {
                 window.vue.initNavbar();
+
+                @if (Session::has('flash.error'))
+                    setTimeout('window.vue.showError()', 500);
+                @endif
+
+                @if (Session::has('flash.success'))
+                    setTimeout('window.vue.showSuccess()', 500);
+                @endif
             });
         </script>
         @yield('javascript')

@@ -42,9 +42,12 @@ class FrameworkModel extends Model
             $item->creator = $attr['creator'];
             $item->description = \Purifier::clean($attr['description']);
             $item->tags = $attr['tags'] . ' ';
-            $item->github = $attr['github'];
+            $item->github = str_replace('https://github.com/', '', $attr['github']);
             $item->website = $attr['website'];
             $item->twitter = $attr['twitter'];
+
+            $item->twitter = str_replace('https://twitter.com/', '', $item->twitter);
+            $item->twitter = str_replace('@', '', $item->twitter);
 
             $image = request()->file('logo');
             if ($image !== null) {
@@ -179,6 +182,8 @@ class FrameworkModel extends Model
                 $query->whereRaw('LOWER(tags) LIKE ?', ['%' . $tag . ' ' . '%']);
             }
 
+            $query->where('approved', '=', true)->where('locked', '=', false);
+
             if ($sorting === 'latest') {
                 $query->orderBy('id', 'desc');
             } else if ($sorting === 'hearts') {
@@ -209,7 +214,7 @@ class FrameworkModel extends Model
                 $query = static::where('langId', '>', 0);
             }
 
-            return $query->where('id', '<>', $exclude)->limit($limit)->inRandomOrder()->get();
+            return $query->where('id', '<>', $exclude)->where('approved', '=', true)->where('locked', '=', false)->limit($limit)->inRandomOrder()->get();
         } catch (\Exception $e) {
             throw $e;
         }
@@ -225,7 +230,7 @@ class FrameworkModel extends Model
     public static function getBySlug($slug)
     {
         try {
-            return static::where('slug', '=', $slug)->first();
+            return static::where('slug', '=', $slug)->where('approved', '=', true)->where('locked', '=', false)->first();
         } catch (\Exception $e) {
             throw $e;
         }

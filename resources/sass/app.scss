@@ -237,3 +237,26 @@ body {
     font-style: italic;
     color: rgb(100, 100, 100);
 }
+
+.flash {
+    position: fixed;
+    left: 20%;
+    top: 105px;
+    width: 50%;
+    z-index: 3;
+    word-wrap: break-word;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    display: none;
+}
+.flash p {
+    position: relative;
+    margin: 10px;
+    color: rgb(255, 255, 255);
+}
+.is-flash-error {
+    background-color: rgb(255, 117, 117);
+}
+.is-flash-success {
+    background-color: rgb(50, 202, 50);
+}

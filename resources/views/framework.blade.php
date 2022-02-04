@@ -14,7 +14,11 @@
                     <div class="framework-item-full-about">
                         <div class="framework-item-full-about-title">{{ $framework->name }}</div>
                         <div class="framework-item-full-about-hint">{{ $framework->summary }}</div>
-                        <div class="framework-item-full-about-tags">{{ $framework->tags }}</div>
+                        <div class="framework-item-full-about-tags">
+                            @foreach ($framework->tags as $tag)
+                                <span><a href="">#{{ $tag }}</a>&nbsp;</span>
+                            @endforeach
+                        </div>
                     </div>
 
                     <div class="framework-item-full-description">
@@ -58,7 +62,12 @@
                             <div class="framework-item-about">
                                 <div class="framework-item-about-title">{{ $item->name }}</div>
                                 <div class="framework-item-about-hint">{{ $item->summary }}</div>
-                                <div class="framework-item-about-tags">{{ $item->tags }}</div>
+
+                                <div class="framework-item-about-tags">
+                                    @foreach ($item->tags as $tag)
+                                        <span><a href="">#{{ $tag }}</a>&nbsp;</span>
+                                    @endforeach
+                                </div>
                             </div>
 
                             <div class="framework-item-stats">

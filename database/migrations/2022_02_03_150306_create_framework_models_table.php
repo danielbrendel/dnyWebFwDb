@@ -28,6 +28,7 @@ class CreateFrameworkModelsTable extends Migration
             $table->string('website');
             $table->string('twitter');
             $table->integer('hearts')->default(0);
+            $table->boolean('approved')->default(false);
             $table->boolean('locked')->default(false);
             $table->timestamps();
         });
