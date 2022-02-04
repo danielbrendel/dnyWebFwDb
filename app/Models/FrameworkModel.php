@@ -192,6 +192,30 @@ class FrameworkModel extends Model
     }
 
     /**
+     * Query random framework items
+     * 
+     * @param $exclude
+     * @param $lang
+     * @param $limit
+     * @return mixed
+     * @throws \Exception
+     */
+    public static function queryRandom($exclude, $lang, $limit)
+    {
+        try {
+            if ($lang !== '_all_') {
+                $query = static::where('langId', '=', $lang);
+            } else {
+                $query = static::where('langId', '>', 0);
+            }
+
+            return $query->where('id', '<>', $exclude)->limit($limit)->inRandomOrder()->get();
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
+
+    /**
      * Get framework item by slug
      * 
      * @param $slug

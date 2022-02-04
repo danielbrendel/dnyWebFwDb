@@ -252,3 +252,22 @@ body {
 .github-repo-inactive {
   color: #c80000;
 }
+
+.random-frameworks {
+  margin-top: 65px;
+  margin-bottom: 10px;
+}
+
+.random-frameworks-hint {
+  margin-left: 20px;
+  margin-right: 20px;
+  font-size: 2.5em;
+  color: #435b73;
+}
+
+.random-frameworks-none {
+  margin-left: 20px;
+  margin-right: 20px;
+  font-style: italic;
+  color: #646464;
+}

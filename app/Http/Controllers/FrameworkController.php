@@ -70,9 +70,20 @@ class FrameworkController extends Controller
             
             $user = User::getByAuthId();
             
+            $others = FrameworkModel::queryRandom($item->id, $item->langId, env('APP_QUERYRANDOMCOUNT'));
+            foreach ($others as &$other) {
+                $user = User::where('id', '=', $other->userId)->first();
+                $other->userData = new \stdClass();
+                $other->userData->id = $user->id;
+                $other->userData->username = $user->username;
+
+                $other->views = UniqueViewModel::viewCountAsString(UniqueViewModel::viewForItem($other->id));
+            }
+
             return view('framework', [
                 'user' => $user,
-                'framework' => $item
+                'framework' => $item,
+                'others' => $others
             ]);
         } catch (\Exception $e) {
             dd($e);
