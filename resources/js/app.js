@@ -144,7 +144,7 @@ window.vue = new Vue({
 
         renderFrameworkItem: function(elem) {
             let html = `
-                <div class="framework-item">
+                <div class="framework-item is-pointer" onclick="location.href = '` + window.location.origin + `/view/` + elem.slug + `';">
                     <div class="framework-item-image" style="background-image: url('` + window.location.origin + '/gfx/logos/' + elem.logo + `')"></div>
 
                     <div class="framework-item-about">

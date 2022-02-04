@@ -136,3 +136,119 @@ body {
   display: inline-block;
   float: right;
 }
+
+.framework-item-full {
+  position: relative;
+  display: inline-block;
+  background-color: #fafafa;
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+  border-radius: 25px;
+  margin-top: 20px;
+  margin-left: 10px;
+  margin-right: 10px;
+  width: 100%;
+}
+@media screen and (max-width: 768px) {
+  .framework-item-full {
+    width: 95%;
+  }
+}
+
+.framework-item-full-image {
+  width: 100%;
+  height: 615px;
+  background-repeat: no-repeat;
+  background-size: cover;
+  border-top-left-radius: 25px;
+  border-top-right-radius: 25px;
+}
+@media screen and (max-width: 768px) {
+  .framework-item-full-image {
+    display: none;
+  }
+}
+
+.framework-item-full-about {
+  margin-left: 20px;
+  margin-right: 20px;
+}
+
+.framework-item-full-about-title {
+  color: #435b73;
+  font-weight: bold;
+  font-size: 1.5em;
+  font-family: Rubik, Verdana, Geneva, Tahoma, sans-serif;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.framework-item-full-about-hint {
+  color: #435b73;
+  font-size: 0.9em;
+  font-family: Rubik, Verdana, Geneva, Tahoma, sans-serif;
+}
+
+.framework-item-full-about-tags {
+  color: #c8c8c8;
+  margin-bottom: 20px;
+}
+
+.framework-item-full-description {
+  margin-left: 20px;
+  margin-right: 20px;
+  margin-bottom: 20px;
+  color: #435b73;
+}
+
+.framework-item-full-links {
+  margin-left: 20px;
+  margin-right: 20px;
+  margin-bottom: 20px;
+}
+
+.framework-item-full-stats {
+  margin-left: 20px;
+  margin-right: 20px;
+  margin-top: 10px;
+  margin-bottom: 5px;
+}
+
+.framework-item-full-stats-hearts {
+  display: inline-block;
+}
+
+.framework-item-full-stats-views {
+  display: inline-block;
+  float: right;
+}
+
+.github {
+  margin-left: 20px;
+  margin-right: 20px;
+  margin-bottom: 20px;
+  padding: 20px;
+  border: 1px solid #ccc;
+  border-radius: 25px;
+  width: 500px;
+}
+
+.github-title {
+  color: #435b73;
+}
+
+.github-infos {
+  margin-top: 10px;
+  margin-bottom: 10px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  border-top: 1px solid #ccc;
+  border-bottom: 1px solid #ccc;
+}
+
+.github-repo-active {
+  color: #2d912d;
+}
+
+.github-repo-inactive {
+  color: #c80000;
+}

@@ -17,3 +17,4 @@ use App\Http\Controllers\FrameworkController;
 
 Route::get('/', [MainController::class, 'index']);
 Route::post('/framework/query', [FrameworkController::class, 'query']);
+Route::get('/view/{framework}', [FrameworkController::class, 'view']);

@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use App\Models\FrameworkModel;
-use App\Models\User;
 use App\Models\UniqueViewModel;
+use App\Models\GithubModel;
+use App\Models\User;
 
 class FrameworkController extends Controller
 {
@@ -36,6 +38,45 @@ class FrameworkController extends Controller
             return response()->json(array('code' => 200, 'data' => $data->toArray()));
         } catch (\Exception $e) {
             return response()->json(array('code' => 500, 'msg' => $e->getMessage()));
+        }
+    }
+
+    /**
+     * View specific framework item
+     * 
+     * @param $framework
+     * @return mixed
+     */
+    public function view($framework)
+    {
+        try {
+            $item = FrameworkModel::getBySlug($framework);
+            if (!$item) {
+                $item = FrameworkModel::where('id', '=', $framework)->first();
+                if (!$item) {
+                    throw new \Exception(__('app.framework_not_found'));
+                }
+            }
+
+            $user = User::where('id', '=', $item->userId)->first();
+            $item->userData = new \stdClass();
+            $item->userData->id = $user->id;
+            $item->userData->username = $user->username;
+
+            $item->views = UniqueViewModel::viewCountAsString(UniqueViewModel::viewForItem($item->id));
+            $item->github = GithubModel::queryRepoInfo($item->github);
+            $item->github->last_commit_diff = Carbon::parse($item->github->pushed_at)->diffForHumans();
+            $item->github->commit_day_count = Carbon::parse($item->github->pushed_at)->diff(Carbon::now())->days;
+            
+            $user = User::getByAuthId();
+            
+            return view('framework', [
+                'user' => $user,
+                'framework' => $item
+            ]);
+        } catch (\Exception $e) {
+            dd($e);
+            return back()->with('flash.error', $e->getMessage());
         }
     }
 }

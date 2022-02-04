@@ -190,4 +190,20 @@ class FrameworkModel extends Model
             throw $e;
         }
     }
+
+    /**
+     * Get framework item by slug
+     * 
+     * @param $slug
+     * @return mixed
+     * @throws \Exception
+     */
+    public static function getBySlug($slug)
+    {
+        try {
+            return static::where('slug', '=', $slug)->first();
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
 }

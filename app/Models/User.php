@@ -56,7 +56,7 @@ class User extends Authenticatable
      * @return mixed
      * @throws \Exception
      */
-    public static function getUserEmail($email)
+    public static function getByEmail($email)
     {
         try {
             return static::where('email', '=', $email)->first();
@@ -72,7 +72,7 @@ class User extends Authenticatable
      * @return mixed
      * @throws \Exception
      */
-    public static function getUserUsername($username)
+    public static function getByUsername($username)
     {
         try {
             return static::where('username', '=', $username)->first();
@@ -87,7 +87,7 @@ class User extends Authenticatable
      * @return mixed
      * @throws \Exception
      */
-    public static function getUserAuthId()
+    public static function getByAuthId()
     {
         try {
             return static::where('id', '=', auth()->id())->first();

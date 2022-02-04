@@ -14,10 +14,7 @@ class MainController extends Controller
      */
     public function index()
     {
-        $user = null;
-        if (!\Auth::guest()) {
-            $user = User::getByAuthId();
-        }
+        $user = User::getByAuthId();
 
         return view('home', [
             'user' => $user
