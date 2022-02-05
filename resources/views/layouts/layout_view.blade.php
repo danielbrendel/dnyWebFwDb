@@ -23,7 +23,7 @@
 
     <body>
         <main id="main">
-            @include('navbar')
+            @include('widgets.navbar')
 
             <div class="content">
                 @if ($errors->any())
@@ -107,8 +107,9 @@
                 @yield('content')
             </div>
 
-            @include('about')
-            @include('footer')
+            @include('widgets.about')
+            @include('widgets.footer')
+            @include('widgets.login')
         </main>
 
         <script src="{{ asset('js/app.js') }}"></script>

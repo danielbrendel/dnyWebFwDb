@@ -36,6 +36,66 @@ body {
     cursor: pointer;
 }
 
+.is-mobile-like-screen-width {
+    @media screen and (min-width: 1087px) {
+        display: none;
+    }
+}
+
+.is-mobile-top-5 {
+    @media screen and (max-width: 630px) {
+        position: relative;
+        top: 5px;
+    }
+}
+
+.is-color-grey {
+    color: rgb(120, 120, 120);
+}
+.is-color-grey:hover {
+    color: rgb(150, 150, 150);
+}
+
+.is-top-5 {
+    position: relative;
+    top: 5px;
+}
+
+.navbar-link {
+    color: rgb(150, 150, 150);
+}
+.navbar.is-dark .navbar-item.has-dropdown:hover .navbar-link, .navbar.is-dark .navbar-item.has-dropdown.is-active .navbar-link {
+    background-color: unset;
+}
+.is-input-navbar {
+    color: rgb(150, 150, 150);
+    background-color: rgb(50, 50, 50);
+    border: 1px solid rgb(100, 100, 100);
+}
+.is-input-navbar::placeholder {
+    color: rgb(100, 100, 100);
+    opacity: 1;
+}
+.navbar-dropdown {
+    background-color: rgb(50, 50, 50);
+    border-top: unset;
+}
+.navbar-dropdown a {
+    color: rgb(150, 150, 150);
+}
+.navbar-dropdown a:hover {
+    color: rgb(200, 200, 200) !important;
+    background-color: rgb(100, 100, 100) !important;
+    @media screen and (max-width: 1087px) {
+        background-color: rgb(50, 50, 50) !important;
+    }
+}
+.navbar-menu {
+    @media screen and (max-width: 1087px) {
+        background-color: rgb(50, 50, 50);
+    }
+}
+
 .about {
     width: 100%;
     height: auto;

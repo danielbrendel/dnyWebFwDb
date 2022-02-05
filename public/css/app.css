@@ -35,6 +35,86 @@ body {
   cursor: pointer;
 }
 
+@media screen and (min-width: 1087px) {
+  .is-mobile-like-screen-width {
+    display: none;
+  }
+}
+
+@media screen and (max-width: 630px) {
+  .is-mobile-top-5 {
+    position: relative;
+    top: 5px;
+  }
+}
+
+.is-color-grey {
+  color: #787878;
+}
+
+.is-color-grey:hover {
+  color: #969696;
+}
+
+.is-top-5 {
+  position: relative;
+  top: 5px;
+}
+
+.navbar-link {
+  color: #969696;
+}
+
+.navbar.is-dark .navbar-item.has-dropdown:hover .navbar-link, .navbar.is-dark .navbar-item.has-dropdown.is-active .navbar-link {
+  background-color: unset;
+}
+
+.is-input-navbar {
+  color: #969696;
+  background-color: #323232;
+  border: 1px solid #646464;
+}
+
+.is-input-navbar::-moz-placeholder {
+  color: #646464;
+  opacity: 1;
+}
+
+.is-input-navbar:-ms-input-placeholder {
+  color: #646464;
+  opacity: 1;
+}
+
+.is-input-navbar::placeholder {
+  color: #646464;
+  opacity: 1;
+}
+
+.navbar-dropdown {
+  background-color: #323232;
+  border-top: unset;
+}
+
+.navbar-dropdown a {
+  color: #969696;
+}
+
+.navbar-dropdown a:hover {
+  color: #c8c8c8 !important;
+  background-color: #646464 !important;
+}
+@media screen and (max-width: 1087px) {
+  .navbar-dropdown a:hover {
+    background-color: #323232 !important;
+  }
+}
+
+@media screen and (max-width: 1087px) {
+  .navbar-menu {
+    background-color: #323232;
+  }
+}
+
 .about {
   width: 100%;
   height: auto;

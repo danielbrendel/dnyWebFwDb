@@ -4,7 +4,13 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\User;
+use App\Models\CaptchaModel;
 
+/**
+ * Class MainController
+ * 
+ * General route handler
+ */
 class MainController extends Controller
 {
     /**
@@ -16,7 +22,8 @@ class MainController extends Controller
     {
         $user = User::getByAuthId();
 
-        return view('home', [
+        return view('home.home', [
+            'captcha' => CaptchaModel::createSum(session()->getId()),
             'user' => $user
         ]);
     }
@@ -73,7 +80,7 @@ class MainController extends Controller
     {
         return view('home.pwreset', [
             'hash' => request('hash', ''),
-            'captchadata' => $this->generateCaptcha()
+            'captcha' => CaptchaModel::createSum(session()->getId())
         ]);
     }
 

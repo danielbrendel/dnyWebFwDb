@@ -9,6 +9,11 @@ use App\Models\UniqueViewModel;
 use App\Models\GithubModel;
 use App\Models\User;
 
+/**
+ * Class FrameworkController
+ * 
+ * Framework item specific route handling
+ */
 class FrameworkController extends Controller
 {
     /**
@@ -85,7 +90,7 @@ class FrameworkController extends Controller
                 $other->tags = explode(' ', $other->tags);
             }
 
-            return view('framework', [
+            return view('entities.framework', [
                 'user' => $user,
                 'framework' => $item,
                 'others' => $others
