@@ -40,7 +40,7 @@ class FrameworkModel extends Model
             $item->name = $attr['name'];
             $item->langId = $attr['lang'];
             $item->creator = $attr['creator'];
-            $item->description = \Purifier::clean($attr['description']);
+            $item->description = $attr['description'];
             $item->tags = $attr['tags'] . ' ';
             $item->github = str_replace('https://github.com/', '', $attr['github']);
             $item->website = $attr['website'];

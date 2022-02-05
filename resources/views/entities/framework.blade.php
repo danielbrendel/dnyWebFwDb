@@ -25,9 +25,7 @@
                         {{ __('app.framework_creator', ['creator' => $framework->creator]) }} &bull; {!! __('app.framework_submitted_by', ['user' => $framework->userData->username, 'url' => url('/user/' . $framework->userData->username)]) !!}
                     </div>
 
-                    <div class="framework-item-full-description">
-                        {{ $framework->description }}
-                    </div>
+                    <div class="framework-item-full-description is-wrap">{{ $framework->description }}</div>
 
                     <div class="framework-item-full-github">
                         @include('widgets.github', ['github' => $framework->github])

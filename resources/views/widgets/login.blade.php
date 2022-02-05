@@ -12,7 +12,7 @@
                 <div class="field">
                     <label class="label">{{ __('app.register_username') }}</label>
                     <div class="control">
-                        <input class="input" type="text" name="username" onchange="window.showUsernameValidity(this.value, document.getElementById('reg-username-validity'));" onkeyup="window.showUsernameValidity(this.value, document.getElementById('reg-username-validity'));" value="{{ old('username') }}" required>
+                        <input class="input" type="text" name="username" onchange="window.vue.showUsernameValidity(this.value, document.getElementById('reg-username-validity'));" onkeyup="window.vue.showUsernameValidity(this.value, document.getElementById('reg-username-validity'));" value="{{ old('username') }}" required>
                     </div>
                     <p id="reg-username-validity" class="help"></p>
                 </div>
@@ -27,14 +27,14 @@
                 <div class="field">
                     <label class="label">{{ __('app.register_password') }}</label>
                     <div class="control">
-                        <input class="input" type="password" name="password" id="reg-password" onchange="window.showPasswordMatching(document.getElementById('reg-password-confirm').value, this.value, document.getElementById('reg-password-matching'));" onkeyup="window.showPasswordMatching(document.getElementById('reg-password-confirm').value, this.value, document.getElementById('reg-password-matching'));" required>
+                        <input class="input" type="password" name="password" id="reg-password" onchange="window.vue.showPasswordMatching(document.getElementById('reg-password-confirm').value, this.value, document.getElementById('reg-password-matching'));" onkeyup="window.vue.showPasswordMatching(document.getElementById('reg-password-confirm').value, this.value, document.getElementById('reg-password-matching'));" required>
                     </div>
                 </div>
 
                 <div class="field">
                     <label class="label">{{ __('app.register_password_confirmation') }}</label>
                     <div class="control">
-                        <input class="input" type="password" name="password_confirmation" id="reg-password-confirm" onchange="window.showPasswordMatching(document.getElementById('reg-password').value, this.value, document.getElementById('reg-password-matching'));" onkeyup="window.showPasswordMatching(document.getElementById('reg-password').value, this.value, document.getElementById('reg-password-matching'));" required>
+                        <input class="input" type="password" name="password_confirmation" id="reg-password-confirm" onchange="window.vue.showPasswordMatching(document.getElementById('reg-password').value, this.value, document.getElementById('reg-password-matching'));" onkeyup="window.vue.showPasswordMatching(document.getElementById('reg-password').value, this.value, document.getElementById('reg-password-matching'));" required>
                     </div>
                     <p id="reg-password-matching" class="help"></p>
                 </div>

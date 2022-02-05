@@ -200,7 +200,7 @@ class User extends Authenticatable
                 throw new \Exception(__('app.register_email_in_use'));
             }
 
-            if (static::getByName($attr['username'])) {
+            if (static::getByUsername($attr['username'])) {
                 throw new \Exception(__('app.register_username_in_use'));
             }
 

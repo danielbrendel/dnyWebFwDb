@@ -29,3 +29,4 @@ Route::post('/framework/query', [FrameworkController::class, 'query']);
 Route::post('/framework/query/user', [FrameworkController::class, 'queryUser']);
 Route::get('/view/{framework}', [FrameworkController::class, 'view']);
 Route::get('/user/{ident}', [MemberController::class, 'showProfile']);
+Route::get('/member/name/valid', [MemberController::class, 'usernameValidity']);

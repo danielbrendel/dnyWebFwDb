@@ -60,7 +60,8 @@ class MainController extends Controller
             $attr = request()->validate([
                 'username' => 'required',
                 'email' => 'required|email',
-                'password' => 'required'
+                'password' => 'required',
+                'captcha' => 'required|numeric'
             ]);
 
             $id = User::register($attr);

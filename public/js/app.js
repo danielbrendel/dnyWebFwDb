@@ -2060,6 +2060,10 @@ module.exports = {
   \*****************************/
 /***/ ((__unused_webpack_module, __unused_webpack_exports, __webpack_require__) => {
 
+var _methods;
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
 __webpack_require__(/*! ./bootstrap */ "./resources/js/bootstrap.js");
 
 window.vue = new Vue({
@@ -2076,7 +2080,7 @@ window.vue = new Vue({
       passwordMatching: 'The passwords do match'
     }
   },
-  methods: {
+  methods: (_methods = {
     invalidLoginEmail: function invalidLoginEmail() {
       var el = document.getElementById("loginemail");
 
@@ -2103,6 +2107,28 @@ window.vue = new Vue({
       } else {
         el.classList.remove('is-danger');
       }
+    },
+    showUsernameValidity: function showUsernameValidity(username, hint) {
+      var currentName = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : '';
+      window.vue.ajaxRequest('get', window.location.origin + '/member/username/valid?ident=' + username, {}, function (response) {
+        if (response.code == 200) {
+          if (currentName !== '' && username === currentName) {
+            hint.innerHTML = '';
+          } else if (!response.data.valid) {
+            hint.classList.add('is-danger');
+            hint.classList.remove('is-success');
+            hint.innerHTML = window.vue.translationTable.invalidUsername;
+          } else if (!response.data.available) {
+            hint.classList.add('is-danger');
+            hint.classList.remove('is-success');
+            hint.innerHTML = window.vue.translationTable.nonavailableUsername;
+          } else if (response.data.valid && response.data.available) {
+            hint.classList.remove('is-danger');
+            hint.classList.add('is-success');
+            hint.innerHTML = window.vue.translationTable.usernameOk;
+          }
+        }
+      });
     },
     ajaxRequest: function ajaxRequest(method, url) {
       var data = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
@@ -2140,68 +2166,62 @@ window.vue = new Vue({
           });
         });
       }
-    },
-    showUsernameValidity: function showUsernameValidity(username, hint) {
-      var currentName = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : '';
-      window.vue.ajaxRequest('get', window.location.origin + '/member/name/valid?ident=' + username, {}, function (response) {
-        if (response.code == 200) {
-          if (currentName !== '' && username === currentName) {
-            hint.innerHTML = '';
-          } else if (!response.data.valid) {
-            hint.classList.add('is-danger');
-            hint.classList.remove('is-success');
-            hint.innerHTML = window.vue.translationTable.invalidUsername;
-          } else if (!response.data.available) {
-            hint.classList.add('is-danger');
-            hint.classList.remove('is-success');
-            hint.innerHTML = window.vue.translationTable.nonavailableUsername;
-          } else if (response.data.valid && response.data.available) {
-            hint.classList.remove('is-danger');
-            hint.classList.add('is-success');
-            hint.innerHTML = window.vue.translationTable.usernameOk;
-          }
-        }
-      });
-    },
-    showPasswordMatching: function showPasswordMatching(pw1, pw2, hint) {
-      if (pw1.length > 0 || pw2.length > 0) {
-        if (pw1 !== pw2) {
-          hint.classList.remove('is-success');
-          hint.classList.add('is-danger');
-          hint.innerHTML = window.vue.translationTable.passwordMismatching;
-        } else {
-          hint.classList.add('is-success');
-          hint.classList.remove('is-danger');
-          hint.innerHTML = window.vue.translationTable.passwordMatching;
-        }
-      }
-    },
-    showError: function showError() {
-      document.getElementById('flash-error').style.display = 'inherit';
-      setTimeout(function () {
-        document.getElementById('flash-error').style.display = 'none';
-      }, 3500);
-    },
-    showSuccess: function showSuccess() {
-      document.getElementById('flash-success').style.display = 'inherit';
-      setTimeout(function () {
-        document.getElementById('flash-success').style.display = 'none';
-      }, 3500);
-    },
-    toggleDropdown: function toggleDropdown(obj) {
-      if (obj) {
-        obj.classList.toggle('is-hidden');
-      }
-    },
-    renderFrameworkItem: function renderFrameworkItem(elem) {
-      var tags = '';
-      elem.tags.forEach(function (tag, index) {
-        tags += '<span><a href="">#' + tag + '</a>&nbsp;</span>';
-      });
-      var html = "\n                <div class=\"framework-item is-pointer\" onclick=\"location.href = '" + window.location.origin + "/view/" + elem.slug + "';\">\n                    <div class=\"framework-item-image\" style=\"background-image: url('" + window.location.origin + '/gfx/logos/' + elem.logo + "')\"></div>\n\n                    <div class=\"framework-item-about\">\n                        <div class=\"framework-item-about-title\">" + elem.name + "</div>\n                        <div class=\"framework-item-about-hint\">" + elem.summary + "</div>\n                        <div class=\"framework-item-about-tags\">" + tags + "</div>\n                    </div>\n\n                    <div class=\"framework-item-stats\">\n                        <div class=\"framework-item-stats-hearts\">\n                            <i class=\"fas fa-heart\"></i>&nbsp;" + elem.hearts + "\n                        </div>\n\n                        <div class=\"framework-item-stats-views\">\n                            <i class=\"far fa-eye\"></i>&nbsp;" + elem.views + "\n                        </div>\n                    </div>\n                </div>\n            ";
-      return html;
     }
-  }
+  }, _defineProperty(_methods, "showUsernameValidity", function showUsernameValidity(username, hint) {
+    var currentName = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : '';
+    window.vue.ajaxRequest('get', window.location.origin + '/member/name/valid?ident=' + username, {}, function (response) {
+      if (response.code == 200) {
+        if (currentName !== '' && username === currentName) {
+          hint.innerHTML = '';
+        } else if (!response.data.valid) {
+          hint.classList.add('is-danger');
+          hint.classList.remove('is-success');
+          hint.innerHTML = window.vue.translationTable.invalidUsername;
+        } else if (!response.data.available) {
+          hint.classList.add('is-danger');
+          hint.classList.remove('is-success');
+          hint.innerHTML = window.vue.translationTable.nonavailableUsername;
+        } else if (response.data.valid && response.data.available) {
+          hint.classList.remove('is-danger');
+          hint.classList.add('is-success');
+          hint.innerHTML = window.vue.translationTable.usernameOk;
+        }
+      }
+    });
+  }), _defineProperty(_methods, "showPasswordMatching", function showPasswordMatching(pw1, pw2, hint) {
+    if (pw1.length > 0 || pw2.length > 0) {
+      if (pw1 !== pw2) {
+        hint.classList.remove('is-success');
+        hint.classList.add('is-danger');
+        hint.innerHTML = window.vue.translationTable.passwordMismatching;
+      } else {
+        hint.classList.add('is-success');
+        hint.classList.remove('is-danger');
+        hint.innerHTML = window.vue.translationTable.passwordMatching;
+      }
+    }
+  }), _defineProperty(_methods, "showError", function showError() {
+    document.getElementById('flash-error').style.display = 'inherit';
+    setTimeout(function () {
+      document.getElementById('flash-error').style.display = 'none';
+    }, 3500);
+  }), _defineProperty(_methods, "showSuccess", function showSuccess() {
+    document.getElementById('flash-success').style.display = 'inherit';
+    setTimeout(function () {
+      document.getElementById('flash-success').style.display = 'none';
+    }, 3500);
+  }), _defineProperty(_methods, "toggleDropdown", function toggleDropdown(obj) {
+    if (obj) {
+      obj.classList.toggle('is-hidden');
+    }
+  }), _defineProperty(_methods, "renderFrameworkItem", function renderFrameworkItem(elem) {
+    var tags = '';
+    elem.tags.forEach(function (tag, index) {
+      tags += '<span><a href="">#' + tag + '</a>&nbsp;</span>';
+    });
+    var html = "\n                <div class=\"framework-item is-pointer\" onclick=\"location.href = '" + window.location.origin + "/view/" + elem.slug + "';\">\n                    <div class=\"framework-item-image\" style=\"background-image: url('" + window.location.origin + '/gfx/logos/' + elem.logo + "')\"></div>\n\n                    <div class=\"framework-item-about\">\n                        <div class=\"framework-item-about-title\">" + elem.name + "</div>\n                        <div class=\"framework-item-about-hint\">" + elem.summary + "</div>\n                        <div class=\"framework-item-about-tags\">" + tags + "</div>\n                    </div>\n\n                    <div class=\"framework-item-stats\">\n                        <div class=\"framework-item-stats-hearts\">\n                            <i class=\"fas fa-heart\"></i>&nbsp;" + elem.hearts + "\n                        </div>\n\n                        <div class=\"framework-item-stats-views\">\n                            <i class=\"far fa-eye\"></i>&nbsp;" + elem.views + "\n                        </div>\n                    </div>\n                </div>\n            ";
+    return html;
+  }), _methods)
 });
 
 /***/ }),

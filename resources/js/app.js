@@ -48,6 +48,28 @@ window.vue = new Vue({
             }
         },
 
+        showUsernameValidity: function(username, hint, currentName = '') {
+            window.vue.ajaxRequest('get', window.location.origin + '/member/username/valid?ident=' + username, {}, function(response) {
+                if (response.code == 200) {
+                    if ((currentName !== '') && (username === currentName)) {
+                        hint.innerHTML = '';
+                    } else if (!response.data.valid) {
+                        hint.classList.add('is-danger');
+                        hint.classList.remove('is-success');
+                        hint.innerHTML = window.vue.translationTable.invalidUsername;
+                    } else if (!response.data.available) {
+                        hint.classList.add('is-danger');
+                        hint.classList.remove('is-success');
+                        hint.innerHTML = window.vue.translationTable.nonavailableUsername;
+                    } else if ((response.data.valid) && (response.data.available)) {
+                        hint.classList.remove('is-danger');
+                        hint.classList.add('is-success');
+                        hint.innerHTML = window.vue.translationTable.usernameOk;
+                    }
+                }
+            });
+        },
+
         ajaxRequest: function (method, url, data = {}, successfunc = function(data){}, finalfunc = function(){}, config = {})
         {
             let func = window.axios.get;

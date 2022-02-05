@@ -61,6 +61,14 @@ body {
     top: 5px;
 }
 
+.is-wrap {
+    white-space: pre-wrap;
+    white-space: -moz-pre-wrap;
+    white-space: -pre-wrap;
+    white-space: -o-pre-wrap;
+    word-wrap: break-word;
+}
+
 .navbar-link {
     color: rgb(150, 150, 150);
 }
@@ -175,6 +183,13 @@ body {
     color: rgb(200, 200, 200);
     margin-bottom: 20px;
 }
+.framework-item-about-tags a {
+    color: rgb(150, 150, 150);
+}
+.framework-item-about-tags a:hover {
+    color: rgb(150, 150, 150);
+    font-weight: bold;
+}
 .framework-item-full-user {
     margin-bottom: 15px;
     color: rgb(67, 91, 115);
@@ -249,11 +264,23 @@ body {
     color: rgb(200, 200, 200);
     margin-bottom: 20px;
 }
+.framework-item-full-about-tags a {
+    color: rgb(150, 150, 150);
+}
+.framework-item-full-about-tags a:hover {
+    color: rgb(150, 150, 150);
+    font-weight: bold;
+}
 .framework-item-full-description {
     margin-left: 20px;
     margin-right: 20px;
     margin-bottom: 20px;
+    padding: 20px;
+    border-radius: 4px;
+    background-color: rgb(230, 230, 230);
     color: rgb(67, 91, 115);
+    font-family: monospace, sans-serif;
+    font-size: 0.8em;
 }
 .framework-item-full-links {
     margin-left: 20px;
