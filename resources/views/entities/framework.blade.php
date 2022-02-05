@@ -1,4 +1,4 @@
-@extends('layout')
+@extends('layouts.layout_view')
 
 @section('title', ' - ' . $framework->name)
 
@@ -21,12 +21,16 @@
                         </div>
                     </div>
 
+                    <div class="framework-item-full-user">
+                        {{ __('app.framework_creator', ['creator' => $framework->creator]) }} &bull; {!! __('app.framework_submitted_by', ['user' => $framework->userData->username, 'url' => url('/user/' . $framework->userData->username)]) !!}
+                    </div>
+
                     <div class="framework-item-full-description">
                         {{ $framework->description }}
                     </div>
 
                     <div class="framework-item-full-github">
-                        @include('github', ['github' => $framework->github])
+                        @include('widgets.github', ['github' => $framework->github])
                     </div>
 
                     <div class="framework-item-full-links">

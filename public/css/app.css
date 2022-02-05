@@ -209,6 +209,23 @@ body {
   margin-bottom: 20px;
 }
 
+.framework-item-full-user {
+  margin-bottom: 15px;
+  color: #435b73;
+  margin-left: 20px;
+  margin-right: 20px;
+}
+
+.framework-item-full-user a {
+  color: #435b73;
+  font-weight: bold;
+}
+
+.framework-item-full-user a:hover {
+  color: #4c6986;
+  font-weight: bold;
+}
+
 .framework-item-stats {
   margin-left: 20px;
   margin-right: 20px;

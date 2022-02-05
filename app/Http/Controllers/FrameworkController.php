@@ -7,6 +7,7 @@ use Illuminate\Support\Carbon;
 use App\Models\FrameworkModel;
 use App\Models\UniqueViewModel;
 use App\Models\GithubModel;
+use App\Models\CaptchaModel;
 use App\Models\User;
 
 /**
@@ -91,6 +92,7 @@ class FrameworkController extends Controller
             }
 
             return view('entities.framework', [
+                'captcha' => CaptchaModel::createSum(session()->getId()),
                 'user' => $user,
                 'framework' => $item,
                 'others' => $others

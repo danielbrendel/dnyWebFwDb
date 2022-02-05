@@ -175,6 +175,20 @@ body {
     color: rgb(200, 200, 200);
     margin-bottom: 20px;
 }
+.framework-item-full-user {
+    margin-bottom: 15px;
+    color: rgb(67, 91, 115);
+    margin-left: 20px;
+    margin-right: 20px;
+}
+.framework-item-full-user a {
+    color: rgb(67, 91, 115);
+    font-weight: bold;
+}
+.framework-item-full-user a:hover {
+    color: rgb(76, 105, 134);
+    font-weight: bold;
+}
 .framework-item-stats {
     margin-left: 20px;
     margin-right: 20px;
