@@ -49,6 +49,39 @@ class FrameworkController extends Controller
     }
 
     /**
+     * Query framework item list of a specific user
+     * 
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function queryUser()
+    {
+        try {
+            $userId = request('user');
+            $paginate = request('paginate', null);
+
+            $user = User::where('id', '=', $userId)->where('locked', '=', false)->first();
+            if (!$user) {
+                throw new \Exception('User not found: ' . $user);
+            }
+
+            $data = FrameworkModel::queryUserFrameworks($user->id, $paginate);
+            foreach ($data as &$item) {
+                $user = User::where('id', '=', $item->userId)->first();
+                $item->userData = new \stdClass();
+                $item->userData->id = $user->id;
+                $item->userData->username = $user->username;
+
+                $item->views = UniqueViewModel::viewCountAsString(UniqueViewModel::viewForItem($item->id));
+                $item->tags = explode(' ', $item->tags);
+            }
+
+            return response()->json(array('code' => 200, 'data' => $data->toArray()));
+        } catch (\Exception $e) {
+            return response()->json(array('code' => 500, 'msg' => $e->getMessage()));
+        }
+    }
+
+    /**
      * View specific framework item
      * 
      * @param $framework

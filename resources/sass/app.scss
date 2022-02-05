@@ -340,3 +340,45 @@ body {
 .is-flash-success {
     background-color: rgb(50, 202, 50);
 }
+
+.profile {
+    margin-left: 20px;
+    margin-right: 20px;
+    margin-top: 40px;
+}
+.profile-header {
+    position: relative;
+}
+.profile-header-left {
+    display: inline-block;
+}
+.profile-header-left img {
+    border-radius: 50%;
+}
+.profile-header-right {
+    position: relative;
+    display: inline-block;
+    top: -12px;
+    margin-left: 10px;
+}
+.profile-bio {
+    margin-top: 15px;
+    margin-bottom: 15px;
+    font-style: italic;
+}
+.profile-footer {
+    margin-top: 15px;
+}
+.profile-footer a {
+    color: rgb(100, 100, 100);
+}
+.profile-footer a:hover {
+    color: rgb(120, 120, 120);
+}
+.profile-framework-items-hint {
+    margin-top: 45px;
+    margin-left: 20px;
+    margin-right: 20px;
+    font-size: 2.5em;
+    color: rgb(67, 91, 115);
+}

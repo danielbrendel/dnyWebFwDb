@@ -61,6 +61,21 @@ class AppModel extends Model
     }
 
     /**
+     * Get about content
+     * 
+     * @return string
+     * @throws \Exception
+     */
+    public static function getAbout()
+    {
+        try {
+            return static::getAppSettings()->about;
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
+
+    /**
      * Get imprint content
      * 
      * @return string

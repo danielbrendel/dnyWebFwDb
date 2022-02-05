@@ -197,6 +197,29 @@ class FrameworkModel extends Model
     }
 
     /**
+     * Query framework items by a specific user
+     * 
+     * @param $userId
+     * @param $paginate
+     * @return mixed
+     * @throws \Exception
+     */
+    public static function queryUserFrameworks($userId, $paginate = null)
+    {
+        try {
+            $query = static::where('userId', '=', $userId);
+
+            if ($paginate !== null) {
+                $query->where('id', '<', $paginate);
+            }
+
+            return $query->orderBy('id', 'desc')->limit(env('APP_MAXQUERYCOUNT'))->get();
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
+
+    /**
      * Query random framework items
      * 
      * @param $exclude

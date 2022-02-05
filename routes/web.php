@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\MainController;
 use App\Http\Controllers\FrameworkController;
+use App\Http\Controllers\MemberController;
 
 /*
 |--------------------------------------------------------------------------
@@ -25,4 +26,6 @@ Route::post('/reset', [MainController::class, 'reset']);
 Route::post('/login', [MainController::class, 'login']);
 Route::any('/logout', [MainController::class, 'logout']);
 Route::post('/framework/query', [FrameworkController::class, 'query']);
+Route::post('/framework/query/user', [FrameworkController::class, 'queryUser']);
 Route::get('/view/{framework}', [FrameworkController::class, 'view']);
+Route::get('/user/{ident}', [MemberController::class, 'showProfile']);

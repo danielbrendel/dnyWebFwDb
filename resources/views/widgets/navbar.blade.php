@@ -73,6 +73,12 @@
                 </div>
             </div>
 
+            <div class="navbar-item">
+                <div class="is-top-5">
+                    <img class="avatar is-pointer" src="{{ asset('gfx/avatars/' . $user->avatar) }}" title="{{ __('app.profile') }}"  onclick="location.href='{{ url('/profile') }}';">&nbsp;<span class="is-mobile-like-screen-width"><a class="is-color-grey" href="javascript:void(0);" onclick="location.href='{{ url('/profile') }}';">{{ __('app.profile') }}</a></span>
+                </div>
+            </div>
+
             @if ($user->admin)
             <div class="navbar-item">
                 <div>
