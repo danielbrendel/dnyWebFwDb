@@ -76,15 +76,15 @@ class AppModel extends Model
     }
 
     /**
-     * Get privacy content
+     * Get terms of service content
      * 
      * @return string
      * @throws \Exception
      */
-    public static function getPrivacy()
+    public static function getTermsOfService()
     {
         try {
-            return static::getAppSettings()->privacy;
+            return static::getAppSettings()->tos;
         } catch (\Exception $e) {
             throw $e;
         }

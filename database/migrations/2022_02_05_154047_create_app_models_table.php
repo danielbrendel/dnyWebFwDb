@@ -17,7 +17,7 @@ class CreateAppModelsTable extends Migration
             $table->id();
             $table->text('about');
             $table->text('imprint');
-            $table->text('privacy');
+            $table->text('tos');
             $table->string('reg_info');
             $table->string('cookie_consent');
             $table->timestamps();
