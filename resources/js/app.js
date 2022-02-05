@@ -194,6 +194,54 @@ window.vue = new Vue({
             `;
 
             return html;
+        },
+
+        renderReview: function(elem, user, isAdmin = false) {
+            let stars = '';
+            
+            for (let i = 0; i < elem.stars; i++) {
+                stars += '<span class="review-star-color"><i class="fas fa-star"></i></span>';
+            }
+
+            if (elem.stars < 5) {
+                for (let j = elem.stars; j < 5; j++) {
+                    stars += '<span class="review-star-color"><i class="far fa-star"></i></span>';
+                }
+            }
+
+            let options = '';
+
+            if (elem.userData.id != user) {
+                options += '<div class="review-footer-option"><a href="">Report</a>&nbsp;</div>';
+            }
+
+            if ((isAdmin) || (elem.userData.id == user)) {
+                options += '<div class="review-footer-option"><a href="">Delete</a>&nbsp;</div>';
+            }
+
+            let html = `
+                <div class="review">
+                    <div class="review-header">
+                        <div class="review-header-left">
+                            <img src="` + window.location.origin + '/gfx/avatars/' + elem.userData.avatar + `" width="64" height="64">
+                        </div>
+
+                        <div class="review-header-right">
+                            <div class="review-header-right-username"><a href="">` + elem.userData.username + `</a></div>
+                            
+                            <div class="review-header-right-stars">` + stars + `</div>
+                        </div>
+                    </div>
+
+                    <div class="review-content">` + elem.content + `</div>
+
+                    <div class="review-footer">
+                        ` + options + `
+                    </div>
+                </div>
+            `;
+
+            return html;
         }
     }
 });

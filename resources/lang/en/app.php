@@ -29,5 +29,6 @@ return [
     'repo_seems_inactive' => 'Project seems inactive',
     'random_frameworks_hint' => 'You may also like...',
     'framework_creator' => 'By :creator',
-    'framework_submitted_by' => 'Submitted by <a href=":url">&#64;:user</a>'
+    'framework_submitted_by' => 'Submitted by <a href=":url">&#64;:user</a>',
+    'reviews' => 'Reviews'
 ];

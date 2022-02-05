@@ -8,6 +8,7 @@ use App\Models\FrameworkModel;
 use App\Models\UniqueViewModel;
 use App\Models\GithubModel;
 use App\Models\CaptchaModel;
+use App\Models\ReviewModel;
 use App\Models\User;
 
 /**
@@ -82,6 +83,33 @@ class FrameworkController extends Controller
     }
 
     /**
+     * Query framework item reviews
+     * 
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function queryReviews()
+    {
+        try {
+            $frameworkId = request('frameworkId');
+            $paginate = request('paginate', null);
+
+            $data = ReviewModel::queryReviews($frameworkId, $paginate);
+            foreach ($data as &$item) {
+                $user = User::where('id', '=', $item->userId)->first();
+
+                $item->userData = new \stdClass();
+                $item->userData->id = $user->id;
+                $item->userData->username = $user->username;
+                $item->userData->avatar = $user->avatar;
+            }
+
+            return response()->json(array('code' => 200, 'data' => $data->toArray()));
+        } catch (\Exception $e) {
+            return response()->json(array('code' => 500, 'msg' => $e->getMessage()));
+        }
+    }
+
+    /**
      * View specific framework item
      * 
      * @param $framework
@@ -110,6 +138,7 @@ class FrameworkController extends Controller
             $item->github->stargazers_count = GithubModel::countAsString($item->github->stargazers_count);
             $item->github->forks_count = GithubModel::countAsString($item->github->forks_count);
             $item->tags = explode(' ', $item->tags);
+            $item->avg_stars = ReviewModel::getAverageStars($item->id);
 
             $user = User::getByAuthId();
             

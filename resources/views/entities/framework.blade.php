@@ -52,6 +52,22 @@
                     </div>
                 </div>
 
+                <div class="reviews">
+                    <div class="reviews-hint">
+                        {{ __('app.reviews') }}&nbsp;
+                    
+                        @for ($i = 0; $i < 5; $i++)
+                            @if ($i < $framework->avg_stars)
+                                <span class="review-star-color"><i class="fas fa-star"></i></span>
+                            @else
+                                <span class="review-star-color"><i class="far fa-star"></i></span>
+                            @endif
+                        @endfor
+                    </div>
+
+                    <div class="reviews-content" id="review-content"></div>
+                </div>
+
                 @if (count($others) > 0)
                 <div class="random-frameworks">
                     <div class="random-frameworks-hint">{{ __('app.random_frameworks_hint') }}</div>
@@ -91,4 +107,73 @@
             <div class="column is-1"></div>
         </div>
     </div>
+@endsection
+
+@section('javascript')
+    <script>
+        window.frameworkId = {{ $framework->id }};
+        window.paginate = null;
+
+        @auth
+            window.userId = {{ $user->id }};
+        @elseguest
+            window.userId = 0;
+        @endauth
+
+        @auth
+            @if ($user->admin)
+                window.isAdmin = true;
+            @else
+                window.isAdmin = false;
+            @endif
+        @elseguest
+            window.isAdmin = false;
+        @endauth
+
+        window.queryReviews = function() {
+            let content = document.getElementById('review-content');
+
+            content.innerHTML += '<div id="spinner"><center><i class="fa fa-spinner fa-spin"></i></center></div>';
+
+            let loadmore = document.getElementById('loadmore');
+            if (loadmore) {
+                loadmore.remove();
+            }
+
+            window.vue.ajaxRequest('post', '{{ url('/framework/query/reviews') }}', {
+                frameworkId: window.frameworkId,
+                paginate: window.paginate
+            },
+            function(response) {
+                if (response.code == 200) {
+                    response.data.forEach(function(elem, index) {
+                        let html = window.vue.renderReview(elem, window.userId, window.isAdmin);
+
+                        content.innerHTML += html;
+                    });
+
+                    if (response.data.length > 0) {
+                        window.paginate = response.data[response.data.length - 1].id;
+                    }
+
+                    let spinner = document.getElementById('spinner');
+                    if (spinner) {
+                        spinner.remove();
+                    }
+
+                    if (response.data.length === 0) {
+                        content.innerHTML += '<div><br/>{{ __('app.no_more_items') }}</div>';
+                    } else {
+                        content.innerHTML += '<div id="loadmore"><center><br/><i class="fas fa-plus is-pointer" onclick="window.queryReviews();"></i></center></div>';
+                    }
+                } else {
+                    console.error(response.msg);
+                }
+            });
+        };
+
+        document.addEventListener('DOMContentLoaded', function() {
+            window.queryReviews();
+        });
+    </script>
 @endsection

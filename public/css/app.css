@@ -408,6 +408,78 @@ body {
   color: #646464;
 }
 
+.reviews {
+  margin-top: 45px;
+  margin-left: 20px;
+  margin-right: 20px;
+  margin-bottom: 25px;
+}
+
+.reviews-hint {
+  font-size: 2.5em;
+  color: #435b73;
+}
+
+.reviews-content {
+  margin-top: 25px;
+}
+
+.review {
+  margin-bottom: 25px;
+  border-bottom: 1px solid #969696;
+}
+
+.review-header {
+  position: relative;
+}
+
+.review-header-left {
+  position: relative;
+  display: inline-block;
+}
+
+.review-header-right {
+  position: relative;
+  display: inline-block;
+  top: -15px;
+}
+
+.review-header-right-username a {
+  color: #323232;
+}
+
+.review-header-right-username a:hover {
+  color: #323232;
+  text-decoration: underline;
+}
+
+.review-content {
+  margin-top: 20px;
+  margin-bottom: 20px;
+  font-family: monospace, sans-serif;
+}
+
+.review-footer {
+  margin-top: 10px;
+}
+
+.review-footer-option {
+  display: inline-block;
+}
+
+.review-footer-option a {
+  color: #969696;
+}
+
+.review-footer-option a:hover {
+  color: #969696;
+  text-decoration: underline;
+}
+
+.review-star-color {
+  color: #b38f17;
+}
+
 .flash {
   position: fixed;
   left: 20%;

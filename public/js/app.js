@@ -2221,6 +2221,32 @@ window.vue = new Vue({
     });
     var html = "\n                <div class=\"framework-item is-pointer\" onclick=\"location.href = '" + window.location.origin + "/view/" + elem.slug + "';\">\n                    <div class=\"framework-item-image\" style=\"background-image: url('" + window.location.origin + '/gfx/logos/' + elem.logo + "')\"></div>\n\n                    <div class=\"framework-item-about\">\n                        <div class=\"framework-item-about-title\">" + elem.name + "</div>\n                        <div class=\"framework-item-about-hint\">" + elem.summary + "</div>\n                        <div class=\"framework-item-about-tags\">" + tags + "</div>\n                    </div>\n\n                    <div class=\"framework-item-stats\">\n                        <div class=\"framework-item-stats-hearts\">\n                            <i class=\"fas fa-heart\"></i>&nbsp;" + elem.hearts + "\n                        </div>\n\n                        <div class=\"framework-item-stats-views\">\n                            <i class=\"far fa-eye\"></i>&nbsp;" + elem.views + "\n                        </div>\n                    </div>\n                </div>\n            ";
     return html;
+  }), _defineProperty(_methods, "renderReview", function renderReview(elem, user) {
+    var isAdmin = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
+    var stars = '';
+
+    for (var i = 0; i < elem.stars; i++) {
+      stars += '<span class="review-star-color"><i class="fas fa-star"></i></span>';
+    }
+
+    if (elem.stars < 5) {
+      for (var j = elem.stars; j < 5; j++) {
+        stars += '<span class="review-star-color"><i class="far fa-star"></i></span>';
+      }
+    }
+
+    var options = '';
+
+    if (elem.userData.id != user) {
+      options += '<div class="review-footer-option"><a href="">Report</a>&nbsp;</div>';
+    }
+
+    if (isAdmin || elem.userData.id == user) {
+      options += '<div class="review-footer-option"><a href="">Delete</a>&nbsp;</div>';
+    }
+
+    var html = "\n                <div class=\"review\">\n                    <div class=\"review-header\">\n                        <div class=\"review-header-left\">\n                            <img src=\"" + window.location.origin + '/gfx/avatars/' + elem.userData.avatar + "\" width=\"64\" height=\"64\">\n                        </div>\n\n                        <div class=\"review-header-right\">\n                            <div class=\"review-header-right-username\"><a href=\"\">" + elem.userData.username + "</a></div>\n                            \n                            <div class=\"review-header-right-stars\">" + stars + "</div>\n                        </div>\n                    </div>\n\n                    <div class=\"review-content\">" + elem.content + "</div>\n\n                    <div class=\"review-footer\">\n                        " + options + "\n                    </div>\n                </div>\n            ";
+    return html;
   }), _methods)
 });
 
