@@ -13,6 +13,8 @@
         <link rel="stylesheet" type="text/css" href="{{ asset('css/bulma.css') }}">
         <link rel="stylesheet" type="text/css" href="{{ asset('css/app.css') }}">
 
+        <link rel="icon" type="image/png" href="{{ asset('logo.png') }}">
+
         <script src="{{ asset('js/fontawesome.js') }}"></script>
         @if (env('APP_ENV') === 'production')
         <script src="{{ asset('js/vue.min.js') }}"></script>
