@@ -150,6 +150,14 @@ body {
   }
 }
 
+.footer-content a {
+  color: #969696;
+}
+
+.footer-content a:hover {
+  color: #c8c8c8;
+}
+
 .framework-item {
   position: relative;
   display: inline-block;

@@ -125,6 +125,12 @@ body {
         transform: translate(-0%, 50%);
     }
 }
+.footer-content a {
+    color: rgb(150, 150, 150);
+}
+.footer-content a:hover {
+    color: rgb(200, 200, 200);
+}
 
 .framework-item {
     position: relative;
