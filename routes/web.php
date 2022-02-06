@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\MainController;
 use App\Http\Controllers\FrameworkController;
 use App\Http\Controllers\MemberController;
+use App\Http\Controllers\AdminController;
 
 /*
 |--------------------------------------------------------------------------
@@ -31,3 +32,17 @@ Route::post('/framework/query/reviews', [FrameworkController::class, 'queryRevie
 Route::get('/view/{framework}', [FrameworkController::class, 'view']);
 Route::get('/user/{ident}', [MemberController::class, 'showProfile']);
 Route::get('/member/name/valid', [MemberController::class, 'usernameValidity']);
+Route::get('/admin', [AdminController::class, 'index']);
+Route::post('/admin/about/save', [AdminController::class, 'saveAbout']);
+Route::post('/admin/logo/save', [AdminController::class, 'saveLogo']);
+Route::post('/admin/cookieconsent/save', [AdminController::class, 'saveCookieConsent']);
+Route::post('/admin/reginfo/save', [AdminController::class, 'saveRegInfo']);
+Route::post('/admin/tos/save', [AdminController::class, 'saveTosContent']);
+Route::post('/admin/imprint/save', [AdminController::class, 'saveImprintContent']);
+Route::post('/admin/headcode/save', [AdminController::class, 'saveHeadCode']);
+Route::get('/admin/user/details', [AdminController::class, 'userDetails']);
+Route::post('/admin/user/save', [AdminController::class, 'userSave']);
+Route::any('/admin/user/{id}/resetpw', [AdminController::class, 'userResetPassword']);
+Route::any('/admin/user/{id}/delete', [AdminController::class, 'userDelete']);
+Route::any('/admin/user/{id}/lock', [AdminController::class, 'lockUser']);
+Route::any('/admin/user/{id}/safe', [AdminController::class, 'setUserSafe']);
