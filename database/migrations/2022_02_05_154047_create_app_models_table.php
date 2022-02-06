@@ -20,6 +20,7 @@ class CreateAppModelsTable extends Migration
             $table->text('tos');
             $table->string('reg_info');
             $table->string('cookie_consent');
+            $table->text('head_code');
             $table->timestamps();
         });
     }

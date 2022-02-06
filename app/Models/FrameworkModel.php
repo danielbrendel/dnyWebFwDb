@@ -250,10 +250,16 @@ class FrameworkModel extends Model
      * @return mixed
      * @throws \Exception
      */
-    public static function getBySlug($slug)
+    public static function getBySlug($slug, $check_approval = true)
     {
         try {
-            return static::where('slug', '=', $slug)->where('approved', '=', true)->where('locked', '=', false)->first();
+            $query = static::where('slug', '=', $slug)->where('locked', '=', false);
+
+            if ($check_approval) {
+                $query->where('approved', '=', true);
+            }
+
+            return $query->first();
         } catch (\Exception $e) {
             throw $e;
         }

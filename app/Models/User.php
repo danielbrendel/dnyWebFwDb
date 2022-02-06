@@ -9,6 +9,9 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use App\Models\PushModel;
 use App\Models\MailerModel;
+use App\Models\FrameworkModel;
+use App\Models\ReviewModel;
+use App\Models\ReportModel;
 
 /**
  * Class User
@@ -320,6 +323,47 @@ class User extends Authenticatable
             $user->password = password_hash($password, PASSWORD_BCRYPT);
             $user->password_reset = '';
             $user->save();
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
+
+    /**
+     * Delete user account
+     * 
+     * @param $userId
+     * @return void
+     * @throws \Exception
+     */
+    public static function deleteAccount($userId)
+    {
+        try {
+            $user = User::where('id', '=', $userId)->first();
+            if (!$user) {
+                throw new \Exception('User not found: ' . $userId);
+            }
+
+            $reviews = ReviewModel::where('userId', '=', $userId)->get();
+            foreach ($reviews as $review) {
+                $review->delete();
+            }
+
+            $frameworks = FrameworkModel::where('userId', '=', $userId)->get();
+            foreach ($frameworks as $framework) {
+                $framework->delete();
+            }
+
+            $reports = ReportModel::where('userId', '=', $userId)->get();
+            foreach ($reports as $report) {
+                $report->delete();
+            }
+
+            $reports = ReportModel::where('entityId', '=', $userId)->where('type', '=', 'ENT_USER')->get();
+            foreach ($reports as $report) {
+                $report->delete();
+            }
+
+            $user->delete();
         } catch (\Exception $e) {
             throw $e;
         }

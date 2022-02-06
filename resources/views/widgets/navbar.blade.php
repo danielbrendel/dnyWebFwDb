@@ -13,6 +13,7 @@
     <div id="navbarMenu" class="navbar-menu">
         <div class="navbar-start"></div>
 
+        @if ((isset($fw_item_filter)) && ($fw_item_filter))
         <center>
             <div class="navbar-item has-dropdown is-hoverable is-inline-block">
                 <a class="navbar-link is-top-5" href="javascript:void(0);" onclick="window.vue.toggleDropdown(document.getElementById('language-dropdown'));">
@@ -45,6 +46,7 @@
                 </span>
             </div>
         </center>
+        @endif
 
         <div class="navbar-end">
             @guest

@@ -63,11 +63,11 @@
 <div class="modal" :class="{'is-active': bShowRecover}">
     <div class="modal-background"></div>
     <div class="modal-card">
-        <header class="modal-card-head">
+        <header class="modal-card-head is-stretched">
             <p class="modal-card-title">{{ __('app.recover_password') }}</p>
             <button class="delete" aria-label="close" onclick="vue.bShowRecover = false;"></button>
         </header>
-        <section class="modal-card-body">
+        <section class="modal-card-body is-stretched">
             <form method="POST" action="{{ url('/recover') }}" id="formResetPw">
                 @csrf
 
@@ -81,7 +81,7 @@
                 <input type="submit" id="recoverpwsubmit" class="is-hidden">
             </form>
         </section>
-        <footer class="modal-card-foot">
+        <footer class="modal-card-foot is-stretched">
             <button class="button is-success" onclick="document.getElementById('recoverpwsubmit').click();">{{ __('app.recover_password') }}</button>
             <button class="button" onclick="vue.bShowRecover = false;">{{ __('app.cancel') }}</button>
         </footer>
@@ -91,11 +91,11 @@
 <div class="modal" :class="{'is-active': bShowLogin}">
     <div class="modal-background"></div>
     <div class="modal-card">
-        <header class="modal-card-head">
+        <header class="modal-card-head is-stretched">
             <p class="modal-card-title">{{ __('app.login') }}</p>
             <button class="delete" aria-label="close" onclick="vue.bShowLogin = false;"></button>
         </header>
-        <section class="modal-card-body">
+        <section class="modal-card-body is-stretched">
             <form method="POST" action="{{ url('/login') }}">
                 @csrf
 
@@ -138,7 +138,7 @@
                 </div>
             </form>
         </section>
-        <footer class="modal-card-foot">
+        <footer class="modal-card-foot is-stretched">
         </footer>
     </div>
 </div>

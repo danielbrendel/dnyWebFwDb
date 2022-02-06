@@ -214,7 +214,7 @@
 
                                     <div class="field">
                                         <div class="control">
-                                            <input type class="checkbox" name="deactivated" id="user_deactivated" data-role="checkbox" data-style="2" data-caption="{{ __('app.deactivated') }}" value="1">
+                                            <input type class="checkbox" name="locked" id="user_locked" data-role="checkbox" data-style="2" data-caption="{{ __('app.locked') }}" value="1">
                                         </div>
                                     </div>
 
@@ -264,7 +264,7 @@
                                         </td>
 
                                         <td class="right">
-                                            <a href="{{ url('/view/' . $approval->name) }}">{{ $approval->name }}</a>
+                                            <a href="{{ url('/view/' . $approval->slug) }}">{{ $approval->name }}</a>
                                         </td>
 
                                         <td>
@@ -311,7 +311,7 @@
                                         </td>
 
                                         <td class="right">
-                                            <a href="{{ url('/p/' . $item->entityId) }}" target="_blank">{{ $item->entityId }}</a>
+                                            <a href="{{ url('/view/' . $item->entityId) }}" target="_blank">{{ $item->entityId }}</a>
                                         </td>
 
                                         <td>
@@ -321,15 +321,15 @@
                                         <td>{{ $item->count }}</td>
 
                                         <td>
-                                            <a href="javascript:void(0)" onclick="if (confirm('{{ __('app.report_confirm_lock') }}')) location.href = '{{ url('/maintainer/entity/lock?id=' . $item->entityId . '&type=' . $item->type) }}';">{{ __('app.report_lock') }}</a>
+                                            <a href="javascript:void(0)" onclick="if (confirm('{{ __('app.report_confirm_lock') }}')) location.href = '{{ url('/admin/entity/lock?id=' . $item->entityId . '&type=' . $item->type) }}';">{{ __('app.report_lock') }}</a>
                                         </td>
 
                                         <td>
-                                            <a href="javascript:void(0)" onclick="if (confirm('{{ __('app.report_confirm_delete') }}')) location.href = '{{ url('/maintainer/entity/delete?id=' . $item->entityId . '&type=' . $item->type) }}';">{{ __('app.report_delete') }}</a>
+                                            <a href="javascript:void(0)" onclick="if (confirm('{{ __('app.report_confirm_delete') }}')) location.href = '{{ url('/admin/entity/delete?id=' . $item->entityId . '&type=' . $item->type) }}';">{{ __('app.report_delete') }}</a>
                                         </td>
 
                                         <td>
-                                            <a href="javascript:void(0)" onclick="if (confirm('{{ __('app.report_confirm_safe') }}')) location.href = '{{ url('/maintainer/entity/safe?id=' . $item->entityId . '&type=' . $item->type) }}';">{{ __('app.report_safe') }}</a>
+                                            <a href="javascript:void(0)" onclick="if (confirm('{{ __('app.report_confirm_safe') }}')) location.href = '{{ url('/admin/entity/safe?id=' . $item->entityId . '&type=' . $item->type) }}';">{{ __('app.report_safe') }}</a>
                                         </td>
                                     </tr>
                                 @endforeach
@@ -362,7 +362,7 @@
                                         </td>
 
                                         <td class="right">
-                                            <a href="{{ url('/u/' . $item->entityId) }}" target="_blank">{{ $item->entityId }}</a>
+                                            <a href="{{ url('/user/' . $item->entityId) }}" target="_blank">{{ $item->entityId }}</a>
                                         </td>
 
                                         <td>
@@ -372,15 +372,15 @@
                                         <td>{{ $item->count }}</td>
 
                                         <td>
-                                            <a href="javascript:void(0)" onclick="if (confirm('{{ __('app.report_confirm_lock') }}')) location.href = '{{ url('/maintainer/entity/lock?id=' . $item->entityId . '&type=' . $item->type) }}';">{{ __('app.report_lock') }}</a>
+                                            <a href="javascript:void(0)" onclick="if (confirm('{{ __('app.report_confirm_lock') }}')) location.href = '{{ url('/admin/entity/lock?id=' . $item->entityId . '&type=' . $item->type) }}';">{{ __('app.report_lock') }}</a>
                                         </td>
 
                                         <td>
-                                            <a href="javascript:void(0)" onclick="if (confirm('{{ __('app.report_confirm_delete') }}')) location.href = '{{ url('/maintainer/entity/delete?id=' . $item->entityId . '&type=' . $item->type) }}';">{{ __('app.report_delete') }}</a>
+                                            <a href="javascript:void(0)" onclick="if (confirm('{{ __('app.report_confirm_delete') }}')) location.href = '{{ url('/admin/entity/delete?id=' . $item->entityId . '&type=' . $item->type) }}';">{{ __('app.report_delete') }}</a>
                                         </td>
 
                                         <td>
-                                            <a href="javascript:void(0)" onclick="if (confirm('{{ __('app.report_confirm_safe') }}')) location.href = '{{ url('/maintainer/entity/safe?id=' . $item->entityId . '&type=' . $item->type) }}';">{{ __('app.report_safe') }}</a>
+                                            <a href="javascript:void(0)" onclick="if (confirm('{{ __('app.report_confirm_safe') }}')) location.href = '{{ url('/admin/entity/safe?id=' . $item->entityId . '&type=' . $item->type) }}';">{{ __('app.report_safe') }}</a>
                                         </td>
                                     </tr>
                                 @endforeach
@@ -413,7 +413,7 @@
                                         </td>
 
                                         <td class="right">
-                                            <a href="{{ url('/p/' . $item->postId . '?c=' . $item->entityId . '#' . $item->entityId) }}" target="_blank">{{ $item->entityId }}</a>
+                                            <a href="{{ url('/view/' . $item->entityId) }}" target="_blank">{{ $item->entityId }}</a>
                                         </td>
 
                                         <td>
@@ -423,15 +423,15 @@
                                         <td>{{ $item->count }}</td>
 
                                         <td>
-                                            <a href="javascript:void(0)" onclick="if (confirm('{{ __('app.report_confirm_lock') }}')) location.href = '{{ url('/maintainer/entity/lock?id=' . $item->entityId . '&type=' . $item->type) }}';">{{ __('app.report_lock') }}</a>
+                                            <a href="javascript:void(0)" onclick="if (confirm('{{ __('app.report_confirm_lock') }}')) location.href = '{{ url('/admin/entity/lock?id=' . $item->entityId . '&type=' . $item->type) }}';">{{ __('app.report_lock') }}</a>
                                         </td>
 
                                         <td>
-                                            <a href="javascript:void(0)" onclick="if (confirm('{{ __('app.report_confirm_delete') }}')) location.href = '{{ url('/maintainer/entity/delete?id=' . $item->entityId . '&type=' . $item->type) }}';">{{ __('app.report_delete') }}</a>
+                                            <a href="javascript:void(0)" onclick="if (confirm('{{ __('app.report_confirm_delete') }}')) location.href = '{{ url('/admin/entity/delete?id=' . $item->entityId . '&type=' . $item->type) }}';">{{ __('app.report_delete') }}</a>
                                         </td>
 
                                         <td>
-                                            <a href="javascript:void(0)" onclick="if (confirm('{{ __('app.report_confirm_safe') }}')) location.href = '{{ url('/maintainer/entity/safe?id=' . $item->entityId . '&type=' . $item->type) }}';">{{ __('app.report_safe') }}</a>
+                                            <a href="javascript:void(0)" onclick="if (confirm('{{ __('app.report_confirm_safe') }}')) location.href = '{{ url('/admin/entity/safe?id=' . $item->entityId . '&type=' . $item->type) }}';">{{ __('app.report_safe') }}</a>
                                         </td>
                                     </tr>
                                 @endforeach
@@ -445,4 +445,28 @@
             <div class="column is-1"></div>
         </div>
     </div>
+@endsection
+
+@section('javascript')
+    <script>
+        function getUserDetails(ident)
+        {
+            window.vue.ajaxRequest('get', '{{ url('/admin/user/details') }}?ident=' + ident, {}, function(response) {
+                if (response.code === 200) {
+                    document.getElementById('user_settings').classList.remove('is-hidden');
+
+                    document.getElementById('user_id').value = response.data.id;
+
+                    document.getElementById('user_name').value = response.data.username;
+                    document.getElementById('user_email').value = response.data.email;
+
+                    document.getElementById('user_locked').checked = response.data.locked;
+                    document.getElementById('user_admin').checked = response.data.admin;
+                } else {
+                    document.getElementById('user_settings').classList.add('is-hidden');
+                    alert(response.msg);
+                }
+            });
+        }
+    </script>
 @endsection

@@ -33,7 +33,7 @@ Route::get('/view/{framework}', [FrameworkController::class, 'view']);
 Route::get('/user/{ident}', [MemberController::class, 'showProfile']);
 Route::get('/member/name/valid', [MemberController::class, 'usernameValidity']);
 Route::get('/admin', [AdminController::class, 'index']);
-Route::post('/admin/about/save', [AdminController::class, 'saveAbout']);
+Route::post('/admin/about/save', [AdminController::class, 'saveAboutContent']);
 Route::post('/admin/logo/save', [AdminController::class, 'saveLogo']);
 Route::post('/admin/cookieconsent/save', [AdminController::class, 'saveCookieConsent']);
 Route::post('/admin/reginfo/save', [AdminController::class, 'saveRegInfo']);
@@ -46,3 +46,8 @@ Route::any('/admin/user/{id}/resetpw', [AdminController::class, 'userResetPasswo
 Route::any('/admin/user/{id}/delete', [AdminController::class, 'userDelete']);
 Route::any('/admin/user/{id}/lock', [AdminController::class, 'lockUser']);
 Route::any('/admin/user/{id}/safe', [AdminController::class, 'setUserSafe']);
+Route::any('/admin/approval/{id}/approve', [AdminController::class, 'approveFramework']);
+Route::any('/admin/approval/{id}/decline', [AdminController::class, 'declineFramework']);
+Route::get('/admin/entity/lock', [AdminController::class, 'lockEntity']);
+Route::get('/admin/entity/delete', [AdminController::class, 'deleteEntity']);
+Route::get('/admin/entity/safe', [AdminController::class, 'setSafeEntity']);

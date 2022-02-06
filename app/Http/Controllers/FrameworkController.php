@@ -118,7 +118,13 @@ class FrameworkController extends Controller
     public function view($framework)
     {
         try {
-            $item = FrameworkModel::getBySlug($framework);
+            $check_approval = true;
+            $viewer = User::getByAuthId();
+            if (($viewer) && ($viewer->admin)) {
+                $check_approval = false;
+            }
+
+            $item = FrameworkModel::getBySlug($framework, $check_approval);
             if (!$item) {
                 $item = FrameworkModel::where('id', '=', $framework)->first();
                 if (!$item) {

@@ -7,6 +7,7 @@ use App\Models\AppModel;
 use App\Models\FrameworkModel;
 use App\Models\ReportModel;
 use App\Models\CaptchaModel;
+use App\Models\ImageModel;
 use App\Models\User;
 
 /**
@@ -43,7 +44,7 @@ class AdminController extends Controller
     {
         $approvals = FrameworkModel::where('approved', '=', false)->orderBy('id', 'asc')->limit(env('APP_APPROVALFETCHCOUNT'))->get();
         foreach ($approvals as &$approval) {
-            $user = User::where('id', '=', $approval->userId);
+            $user = User::where('id', '=', $approval->userId)->first();
 
             $approval->userData = new \stdClass();
             $approval->userData->id = $user->id;
@@ -62,7 +63,8 @@ class AdminController extends Controller
             'settings' => AppModel::getAppSettings(),
             'approvals' => $approvals,
             'reports' => $reports,
-            'user' => User::getByAuthId()
+            'user' => User::getByAuthId(),
+            'metro' => true
         ]);
     }
 
@@ -231,10 +233,10 @@ class AdminController extends Controller
 
             $user = User::where('id', '=', $attr['id'])->first();
             if (!$user) {
-                return back()->with('flash.error', __('app.user_not_found'));
+                throw new \Exception(__('app.user_not_found'));
             }
 
-            $user->name = $attr['username'];
+            $user->username = $attr['username'];
             $user->email = $attr['email'];
             $user->locked = (isset($attr['locked'])) ? (bool)$attr['locked'] : false;
             $user->admin = (isset($attr['admin'])) ? (bool)$attr['admin'] : false;
@@ -255,7 +257,7 @@ class AdminController extends Controller
     public function userResetPassword($id)
     {
         try {
-            $user = User::get($id);
+            $user = User::where('id', '=', $id)->first();
 
             User::recover($user->email);
 
@@ -350,7 +352,7 @@ class AdminController extends Controller
 
                 $srcimage = null;
                 $newname =  'logo.' . $av->getClientOriginalExtension();
-                switch (AppModel::getImageType(public_path() . '/' . $tmpName . '.' . $av->getClientOriginalExtension())) {
+                switch (ImageModel::getImageType($av->getClientOriginalExtension(), public_path() . '/' . $tmpName)) {
                     case IMAGETYPE_PNG:
                         $srcimage = imagecreatefrompng(public_path() . '/' . $tmpName . '.' . $av->getClientOriginalExtension());
                         imagecopyresampled($avimg, $srcimage, 0, 0, 0, 0, 128, 128, $width, $height);
@@ -366,6 +368,108 @@ class AdminController extends Controller
                 return back()->with('flash.success', __('app.data_saved'));
             }
         } catch (\Exception $e) {
+            return back()->with('error', $e->getMessage());
+        }
+    }
+
+    /**
+     * Approve framework item
+     * 
+     * @param $id
+     * @return mixed
+     */
+    public function approveFramework($id)
+    {
+        try {
+            $item = FrameworkModel::where('id', '=', $id)->first();
+            if (!$item) {
+                throw new \Exception('Framework item not found: ' . $id);
+            }
+
+            $item->approved = true;
+            $item->save();
+
+            return back()->with('flash.success', __('app.framework_approved'));
+        } catch (\Exception $e) {
+            return back()->with('error', $e->getMessage());
+        }
+    }
+
+    /**
+     * Decline framework item
+     * 
+     * @param $id
+     * @return mixed
+     */
+    public function declineFramework($id)
+    {
+        try {
+            $item = FrameworkModel::where('id', '=', $id)->first();
+            if (!$item) {
+                throw new \Exception('Framework item not found: ' . $id);
+            }
+
+            $item->delete();
+
+            return back()->with('flash.success', __('app.framework_declined'));
+        } catch (\Exception $e) {
+            return back()->with('error', $e->getMessage());
+        }
+    }
+
+    /**
+     * Lock entity
+     *
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function lockEntity()
+    {
+        try {
+            $id = request('id');
+            $type = request('type');
+
+            AppModel::lockEntity($id, $type);
+
+            return back()->with('flash.success', __('app.entity_locked'));
+        } catch (Exception $e) {
+            return back()->with('error', $e->getMessage());
+        }
+    }
+
+    /**
+     * Delete entity
+     *
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function deleteEntity()
+    {
+        try {
+            $id = request('id');
+            $type = request('type');
+
+            AppModel::deleteEntity($id, $type);
+
+            return back()->with('flash.success', __('app.entity_deleted'));
+        } catch (Exception $e) {
+            return back()->with('error', $e->getMessage());
+        }
+    }
+
+    /**
+     * Set entity safe
+     *
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function setSafeEntity()
+    {
+        try {
+            $id = request('id');
+            $type = request('type');
+
+            AppModel::setEntitySafe($id, $type);
+
+            return back()->with('flash.success', __('app.entity_set_safe'));
+        } catch (Exception $e) {
             return back()->with('error', $e->getMessage());
         }
     }

@@ -11,8 +11,10 @@
         <title>{{ env('APP_NAME') }}@yield('title')</title>
 
         <link rel="stylesheet" type="text/css" href="{{ asset('css/bulma.css') }}">
-        <link rel="stylesheet" type="text/css" href="{{ asset('css/metro-all.min.css') }}">
+        @if ((isset($metro)) && ($metro))
         <link rel="stylesheet" type="text/css" href="{{ asset('css/metro.datatables.css') }}">
+        <link rel="stylesheet" type="text/css" href="{{ asset('css/metro-all.min.css') }}">
+        @endif
         <link rel="stylesheet" type="text/css" href="{{ asset('css/app.css') }}">
 
         <link rel="icon" type="image/png" href="{{ asset('logo.png') }}">
@@ -23,7 +25,11 @@
         @else
         <script src="{{ asset('js/vue.js') }}"></script>
         @endif
+        @if ((isset($metro)) && ($metro))
         <script src="{{ asset('js/metro.min.js') }}"></script>
+        @endif
+
+        {!! \App\Models\AppModel::getHeadCode() !!}
     </head>
 
     <body>

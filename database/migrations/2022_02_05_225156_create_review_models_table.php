@@ -19,6 +19,7 @@ class CreateReviewModelsTable extends Migration
             $table->integer('frameworkId');
             $table->text('content');
             $table->integer('stars');
+            $table->boolean('locked')->default(false);
             $table->timestamps();
         });
     }

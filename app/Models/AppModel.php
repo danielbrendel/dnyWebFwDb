@@ -106,6 +106,21 @@ class AppModel extends Model
     }
 
     /**
+     * Get head code content
+     * 
+     * @return string
+     * @throws \Exception
+     */
+    public static function getHeadCode()
+    {
+        try {
+            return static::getAppSettings()->head_code;
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
+
+    /**
      * Save specific setting
      * 
      * @param $ident
@@ -119,6 +134,104 @@ class AppModel extends Model
             $settings = static::getAppSettings();
             $settings->$ident = $value;
             $settings->save();
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
+
+    /**
+     * Lock entity
+     * @param $id
+     * @param $type
+     * @return void
+     * @throws Exception
+     */
+    public static function lockEntity($id, $type)
+    {
+        try {
+            if ($type === 'ENT_USER') {
+                $item = User::where('id', '=', $id)->first();
+                if ($item) {
+                    $item->locked = true;
+                    $item->save();
+                }
+            } else if ($type === 'ENT_FRAMEWORK') {
+                $item = FrameworkModel::where('id', '=', $id)->first();
+                if ($item) {
+                    $item->locked = true;
+                    $item->save();
+                }
+            } else if ($type === 'ENT_REVIEW') {
+                $item = ReviewModel::where('id', '=', $id)->first();
+                if ($item) {
+                    $item->locked = true;
+                    $item->save();
+                }
+            } else {
+                throw new \Exception('Invalid type: ' . $type, 500);
+            }
+
+            $rows = ReportModel::where('entityId', '=', $id)->where('type', '=', $type)->get();
+            foreach ($rows as $row) {
+                $row->delete();
+            }
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
+
+    /**
+     * Delete entity
+     * @param $id
+     * @param $type
+     * @throws Exception
+     */
+    public static function deleteEntity($id, $type)
+    {
+        try {
+            if ($type === 'ENT_USER') {
+                $item = User::where('id', '=', $id)->first();
+                if ($item) {
+                    $item->delete();
+                }
+            } else if ($type === 'ENT_FRAMEWORK') {
+                $item = FrameworkModel::where('id', '=', $id)->first();
+                if ($item) {
+                    $item->delete();
+                }
+            } else if ($type === 'ENT_REVIEW') {
+                $item = ReviewModel::where('id', '=', $id)->first();
+                if ($item) {
+                    $item->delete();
+                }
+            } else {
+                throw new \Exception('Invalid type: ' . $type, 500);
+            }
+
+            $rows = ReportModel::where('entityId', '=', $id)->where('type', '=', $type)->get();
+            foreach ($rows as $row) {
+                $row->delete();
+            }
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
+
+    /**
+     * Set entity safe
+     *
+     * @param $id
+     * @param $type
+     * @return void
+     * @throws Exception
+     */
+    public static function setEntitySafe($id, $type)
+    {
+        try {
+            $rows = ReportModel::where('entityId', '=', $id)->where('type', '=', $type)->get();
+            foreach ($rows as $row) {
+                $row->delete();
+            }
         } catch (\Exception $e) {
             throw $e;
         }

@@ -120,7 +120,7 @@ class ReviewModel extends Model
             $count = static::where('frameworkId', '=', $frameworkId)->count();
             $stars = static::where('frameworkId', '=', $frameworkId)->sum('stars');
 
-            return $stars / $count;
+            return ($count > 0) ? $stars / $count : 0;
         } catch (\Exception $e) {
             throw $e;
         }

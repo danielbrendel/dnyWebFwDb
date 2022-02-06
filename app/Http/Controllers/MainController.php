@@ -24,7 +24,8 @@ class MainController extends Controller
 
         return view('home.home', [
             'captcha' => CaptchaModel::createSum(session()->getId()),
-            'user' => $user
+            'user' => $user,
+            'fw_item_filter' => true
         ]);
     }
 
