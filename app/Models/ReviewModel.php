@@ -125,4 +125,20 @@ class ReviewModel extends Model
             throw $e;
         }
     }
+
+    /**
+     * Get review count of framework item
+     * 
+     * @param $frameworkId
+     * @return int
+     * @throws \Exception
+     */
+    public static function getReviewCount($frameworkId)
+    {
+        try {
+            return static::where('frameworkId', '=', $frameworkId)->count();
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
 }

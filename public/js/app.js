@@ -2077,7 +2077,8 @@ window.vue = new Vue({
       invalidUsername: 'The name is invalid. Please use only alphanumeric characters, numbers 0-9 and the characters \'-\' and \'_\'. Also number only identifiers are considered invalid',
       nonavailableUsername: 'The given name is already in use',
       passwordMismatching: 'The passwords do not match',
-      passwordMatching: 'The passwords do match'
+      passwordMatching: 'The passwords do match',
+      reviewCount: ':count reviews'
     }
   },
   methods: (_methods = {
@@ -2219,7 +2220,19 @@ window.vue = new Vue({
     elem.tags.forEach(function (tag, index) {
       tags += '<span><a href="">#' + tag + '</a>&nbsp;</span>';
     });
-    var html = "\n                <div class=\"framework-item is-pointer\" onclick=\"location.href = '" + window.location.origin + "/view/" + elem.slug + "';\">\n                    <div class=\"framework-item-image\" style=\"background-image: url('" + window.location.origin + '/gfx/logos/' + elem.logo + "')\"></div>\n\n                    <div class=\"framework-item-about\">\n                        <div class=\"framework-item-about-title\">" + elem.name + "</div>\n                        <div class=\"framework-item-about-hint\">" + elem.summary + "</div>\n                        <div class=\"framework-item-about-tags\">" + tags + "</div>\n                    </div>\n\n                    <div class=\"framework-item-stats\">\n                        <div class=\"framework-item-stats-hearts\">\n                            <i class=\"fas fa-heart\"></i>&nbsp;" + elem.hearts + "\n                        </div>\n\n                        <div class=\"framework-item-stats-views\">\n                            <i class=\"far fa-eye\"></i>&nbsp;" + elem.views + "\n                        </div>\n                    </div>\n                </div>\n            ";
+    var stars = '';
+
+    for (var i = 0; i < elem.avg_stars; i++) {
+      stars += '<span class="review-star-color"><i class="fas fa-star"></i></span>';
+    }
+
+    if (elem.avg_stars < 5) {
+      for (var j = elem.avg_stars; j < 5; j++) {
+        stars += '<span class="review-star-color"><i class="far fa-star"></i></span>';
+      }
+    }
+
+    var html = "\n                <div class=\"framework-item is-pointer\" onclick=\"location.href = '" + window.location.origin + "/view/" + elem.slug + "';\">\n                    <div class=\"framework-item-image\" style=\"background-image: url('" + window.location.origin + '/gfx/logos/' + elem.logo + "')\"></div>\n\n                    <div class=\"framework-item-about\">\n                        <div class=\"framework-item-about-title\">" + elem.name + "</div>\n                        <div class=\"framework-item-about-hint\">" + elem.summary + "</div>\n                        <div class=\"framework-item-about-tags\">" + tags + "</div>\n                    </div>\n\n                    <div class=\"framework-item-stats\">\n                        <div class=\"framework-item-stats-stars\">\n                            " + stars + "\n                            " + window.vue.translationTable.reviewCount.replace(':count', elem.review_count) + "\n                        </div>\n\n                        <div class=\"framework-item-stats-views\">\n                            <i class=\"far fa-eye\"></i>&nbsp;" + elem.views + "\n                        </div>\n                    </div>\n                </div>\n            ";
     return html;
   }), _defineProperty(_methods, "renderReview", function renderReview(elem, user) {
     var isAdmin = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;

@@ -30,5 +30,6 @@ return [
     'random_frameworks_hint' => 'You may also like...',
     'framework_creator' => 'By :creator',
     'framework_submitted_by' => 'Submitted by <a href=":url">&#64;:user</a>',
-    'reviews' => 'Reviews'
+    'reviews' => 'Reviews',
+    'review_count' => ':count reviews'
 ];

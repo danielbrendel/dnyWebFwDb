@@ -14,6 +14,7 @@ window.vue = new Vue({
             nonavailableUsername: 'The given name is already in use',
             passwordMismatching: 'The passwords do not match',
             passwordMatching: 'The passwords do match',
+            reviewCount: ':count reviews'
         },
     },
 
@@ -171,6 +172,18 @@ window.vue = new Vue({
                 tags += '<span><a href="">#' + tag + '</a>&nbsp;</span>';
             });
 
+            let stars = '';
+            
+            for (let i = 0; i < elem.avg_stars; i++) {
+                stars += '<span class="review-star-color"><i class="fas fa-star"></i></span>';
+            }
+
+            if (elem.avg_stars < 5) {
+                for (let j = elem.avg_stars; j < 5; j++) {
+                    stars += '<span class="review-star-color"><i class="far fa-star"></i></span>';
+                }
+            }
+
             let html = `
                 <div class="framework-item is-pointer" onclick="location.href = '` + window.location.origin + `/view/` + elem.slug + `';">
                     <div class="framework-item-image" style="background-image: url('` + window.location.origin + '/gfx/logos/' + elem.logo + `')"></div>
@@ -182,8 +195,9 @@ window.vue = new Vue({
                     </div>
 
                     <div class="framework-item-stats">
-                        <div class="framework-item-stats-hearts">
-                            <i class="fas fa-heart"></i>&nbsp;` + elem.hearts + `
+                        <div class="framework-item-stats-stars">
+                            ` + stars + `
+                            ` + window.vue.translationTable.reviewCount.replace(':count', elem.review_count) + `
                         </div>
 
                         <div class="framework-item-stats-views">

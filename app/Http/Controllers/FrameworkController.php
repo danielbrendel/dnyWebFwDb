@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use App\Models\AppModel;
 use App\Models\FrameworkModel;
 use App\Models\UniqueViewModel;
 use App\Models\GithubModel;
@@ -39,7 +40,9 @@ class FrameworkController extends Controller
                 $item->userData->id = $user->id;
                 $item->userData->username = $user->username;
 
-                $item->views = UniqueViewModel::viewCountAsString(UniqueViewModel::viewForItem($item->id));
+                $item->views = AppModel::countAsString(UniqueViewModel::viewForItem($item->id));
+                $item->avg_stars = ReviewModel::getAverageStars($item->id);
+                $item->review_count = ReviewModel::getReviewCount($item->id);
                 $item->tags = explode(' ', $item->tags);
             }
 
@@ -72,7 +75,9 @@ class FrameworkController extends Controller
                 $item->userData->id = $user->id;
                 $item->userData->username = $user->username;
 
-                $item->views = UniqueViewModel::viewCountAsString(UniqueViewModel::viewForItem($item->id));
+                $item->views = AppModel::countAsString(UniqueViewModel::viewForItem($item->id));
+                $item->avg_stars = ReviewModel::getAverageStars($item->id);
+                $item->review_count = ReviewModel::getReviewCount($item->id);
                 $item->tags = explode(' ', $item->tags);
             }
 
@@ -103,7 +108,9 @@ class FrameworkController extends Controller
                 $item->userData->avatar = $user->avatar;
             }
 
-            return response()->json(array('code' => 200, 'data' => $data->toArray()));
+            $review_count = ReviewModel::getReviewCount($frameworkId);
+
+            return response()->json(array('code' => 200, 'data' => $data->toArray(), 'count' => $review_count));
         } catch (\Exception $e) {
             return response()->json(array('code' => 500, 'msg' => $e->getMessage()));
         }
@@ -137,14 +144,15 @@ class FrameworkController extends Controller
             $item->userData->id = $user->id;
             $item->userData->username = $user->username;
 
-            $item->views = UniqueViewModel::viewCountAsString(UniqueViewModel::viewForItem($item->id));
+            $item->views = AppModel::countAsString(UniqueViewModel::viewForItem($item->id));
             $item->github = GithubModel::queryRepoInfo($item->github);
             $item->github->last_commit_diff = Carbon::parse($item->github->pushed_at)->diffForHumans();
             $item->github->commit_day_count = Carbon::parse($item->github->pushed_at)->diff(Carbon::now())->days;
-            $item->github->stargazers_count = GithubModel::countAsString($item->github->stargazers_count);
-            $item->github->forks_count = GithubModel::countAsString($item->github->forks_count);
+            $item->github->stargazers_count = AppModel::countAsString($item->github->stargazers_count);
+            $item->github->forks_count = AppModel::countAsString($item->github->forks_count);
             $item->tags = explode(' ', $item->tags);
             $item->avg_stars = ReviewModel::getAverageStars($item->id);
+            $item->review_count = ReviewModel::getReviewCount($item->id);
 
             $user = User::getByAuthId();
             
@@ -155,7 +163,9 @@ class FrameworkController extends Controller
                 $other->userData->id = $user->id;
                 $other->userData->username = $user->username;
 
-                $other->views = UniqueViewModel::viewCountAsString(UniqueViewModel::viewForItem($other->id));
+                $other->views = AppModel::countAsString(UniqueViewModel::viewForItem($other->id));
+                $other->avg_stars = ReviewModel::getAverageStars($item->id);
+                $other->review_count = ReviewModel::getReviewCount($item->id);
                 $other->tags = explode(' ', $other->tags);
             }
 

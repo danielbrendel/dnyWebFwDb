@@ -42,8 +42,18 @@
                     </div>
 
                     <div class="framework-item-full-stats">
-                        <div class="framework-item-full-stats-hearts">
-                            <i class="fas fa-heart"></i>&nbsp;{{ $framework->hearts }}
+                        <div class="framework-item-full-stats-stars">
+                            @for ($i = 0; $i < $framework->avg_stars; $i++)
+                                <span class="review-star-color"><i class="fas fa-star"></i></span>
+                            @endfor
+
+                            @if ($framework->avg_stars < 5)
+                                @for ($j = $framework->avg_stars; $j < 5; $j++)
+                                    <span class="review-star-color"><i class="far fa-star"></i></span>
+                                @endfor
+                            @endif
+
+                            {{ __('app.review_count', ['count' => $framework->review_count]) }}
                         </div>
 
                         <div class="framework-item-full-stats-views">
@@ -89,8 +99,18 @@
                             </div>
 
                             <div class="framework-item-stats">
-                                <div class="framework-item-stats-hearts">
-                                    <i class="fas fa-heart"></i>&nbsp;{{ $item->hearts }}
+                                <div class="framework-item-stats-stars">
+                                    @for ($i = 0; $i < $item->avg_stars; $i++)
+                                        <span class="review-star-color"><i class="fas fa-star"></i></span>
+                                    @endfor
+
+                                    @if ($item->avg_stars < 5)
+                                        @for ($j = $item->avg_stars; $j < 5; $j++)
+                                            <span class="review-star-color"><i class="far fa-star"></i></span>
+                                        @endfor
+                                    @endif
+
+                                    {{ __('app.review_count', ['count' => $item->review_count]) }}
                                 </div>
 
                                 <div class="framework-item-stats-views">
