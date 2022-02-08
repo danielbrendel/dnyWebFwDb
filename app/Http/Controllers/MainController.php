@@ -3,8 +3,9 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\User;
 use App\Models\CaptchaModel;
+use App\Models\AppModel;
+use App\Models\User;
 
 /**
  * Class MainController
@@ -26,6 +27,38 @@ class MainController extends Controller
             'captcha' => CaptchaModel::createSum(session()->getId()),
             'user' => $user,
             'fw_item_filter' => true
+        ]);
+    }
+
+    /**
+     * Show imprint page
+     * 
+     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     */
+    public function imprint()
+    {
+        $user = User::getByAuthId();
+
+        return view('home.imprint', [
+            'captcha' => CaptchaModel::createSum(session()->getId()),
+            'user' => $user,
+            'imprint' => AppModel::getImprint()
+        ]);
+    }
+
+    /**
+     * Show ToS page
+     * 
+     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     */
+    public function tos()
+    {
+        $user = User::getByAuthId();
+
+        return view('home.tos', [
+            'captcha' => CaptchaModel::createSum(session()->getId()),
+            'user' => $user,
+            'tos' => AppModel::getTermsOfService()
         ]);
     }
 

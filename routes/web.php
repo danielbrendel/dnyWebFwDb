@@ -18,6 +18,8 @@ use App\Http\Controllers\AdminController;
 */
 
 Route::get('/', [MainController::class, 'index']);
+Route::get('/imprint', [MainController::class, 'imprint']);
+Route::get('/tos', [MainController::class, 'tos']);
 Route::post('/register', [MainController::class, 'register']);
 Route::get('/confirm', [MainController::class, 'confirm']);
 Route::get('/reset', [MainController::class, 'viewReset']);

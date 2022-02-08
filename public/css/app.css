@@ -596,3 +596,8 @@ body {
   font-size: 2.5em;
   color: #435b73;
 }
+
+.page-content {
+  margin-top: 30px;
+  padding: 25px;
+}
