@@ -256,6 +256,12 @@ window.vue = new Vue({
             `;
 
             return html;
+        },
+
+        reportFramework: function(id) {
+            window.vue.ajaxRequest('get', window.location.origin + '/framework/' + id + '/report', {}, function(response){
+                alert(response.msg);
+            });
         }
     }
 });

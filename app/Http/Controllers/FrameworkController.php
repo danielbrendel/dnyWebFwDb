@@ -10,6 +10,7 @@ use App\Models\UniqueViewModel;
 use App\Models\GithubModel;
 use App\Models\CaptchaModel;
 use App\Models\ReviewModel;
+use App\Models\ReportModel;
 use App\Models\User;
 
 /**
@@ -125,15 +126,19 @@ class FrameworkController extends Controller
     public function view($framework)
     {
         try {
-            $check_approval = true;
+            $check_flags = true;
             $viewer = User::getByAuthId();
             if (($viewer) && ($viewer->admin)) {
-                $check_approval = false;
+                $check_flags = false;
             }
 
-            $item = FrameworkModel::getBySlug($framework, $check_approval);
+            $item = FrameworkModel::getBySlug($framework, $check_flags);
             if (!$item) {
-                $item = FrameworkModel::where('id', '=', $framework)->first();
+                $item = FrameworkModel::where('id', '=', $framework);
+                if ($check_flags) {
+                    $item->where('locked', '=', false)->where('approved', '=', true);
+                }
+                $item = $item->first();
                 if (!$item) {
                     throw new \Exception(__('app.framework_not_found'));
                 }
@@ -153,8 +158,6 @@ class FrameworkController extends Controller
             $item->tags = explode(' ', $item->tags);
             $item->avg_stars = ReviewModel::getAverageStars($item->id);
             $item->review_count = ReviewModel::getReviewCount($item->id);
-
-            $user = User::getByAuthId();
             
             $others = FrameworkModel::queryRandom($item->id, $item->langId, env('APP_QUERYRANDOMCOUNT'));
             foreach ($others as &$other) {
@@ -171,12 +174,164 @@ class FrameworkController extends Controller
 
             return view('entities.framework', [
                 'captcha' => CaptchaModel::createSum(session()->getId()),
-                'user' => $user,
+                'user' => User::getByAuthId(),
                 'framework' => $item,
                 'others' => $others
             ]);
         } catch (\Exception $e) {
             return back()->with('flash.error', $e->getMessage());
+        }
+    }
+
+    /**
+     * View submit form
+     * 
+     * @return mixed
+     */
+    public function viewSubmit()
+    {
+        try {
+            parent::validateLogin();
+
+            $user = User::getByAuthId();
+
+            return view('home.submit', [
+                'captcha' => CaptchaModel::createSum(session()->getId()),
+                'user' => $user,
+                'metro' => true
+            ]);
+        } catch (\Exception $e) {
+            return redirect('/')->with('error', $e->getMessage());
+        }
+    }
+
+    /**
+     * Submit framework item
+     * 
+     * @return mixed
+     */
+    public function submit()
+    {
+        try {
+            parent::validateLogin();
+
+            $attr = request()->validate([
+                'name' => 'required',
+                'summary' => 'required|max:120',
+                'lang' => 'required|numeric',
+                'description' => 'required',
+                'creator' => 'required',
+                'tags' => 'nullable',
+                'github' => 'required',
+                'twitter' => 'nullable',
+                'website' => 'nullable'
+            ]);
+
+            FrameworkModel::addFramework($attr);
+
+            return redirect('/')->with('success', __('app.framework_submitted_successfully'));
+        } catch (\Exception $e) {
+            return back()->with('error', $e->getMessage());
+        }
+    }
+
+    /**
+     * View edit form
+     * 
+     * @param $id
+     * @return mixed
+     */
+    public function viewEdit($id)
+    {
+        try {
+            parent::validateLogin();
+
+            $user = User::getByAuthId();
+            
+            $query = FrameworkModel::where('id', '=', $id);
+
+            if (!$user->admin) {
+                $query->where('userId', '=', $user->id)->where('locked', '=', false);
+            }
+
+            $framework = $query->first();
+
+            if (!$framework) {
+                throw new \Exception('Invalid framework item or insufficient permissions: ' . $id);
+            }
+
+            return view('home.edit', [
+                'captcha' => CaptchaModel::createSum(session()->getId()),
+                'user' => $user,
+                'metro' => true,
+                'framework' => $framework
+            ]);
+        } catch (\Exception $e) {
+            return back()->with('error', $e->getMessage());
+        }
+    }
+
+    /**
+     * Update framework with edited data
+     * 
+     * @param $id
+     * @return mixed
+     */
+    public function edit($id)
+    {
+        try {
+            parent::validateLogin();
+
+            $attr = request()->validate([
+                'name' => 'required',
+                'summary' => 'required|max:120',
+                'lang' => 'required|numeric',
+                'description' => 'required',
+                'creator' => 'required',
+                'tags' => 'nullable',
+                'github' => 'required',
+                'twitter' => 'nullable',
+                'website' => 'nullable'
+            ]);
+
+            $user = User::getByAuthId();
+
+            $query = FrameworkModel::where('id', '=', $id);
+
+            if (!$user->admin) {
+                $query->where('userId', '=', $user->id)->where('locked', '=', false);
+            }
+
+            $framework = $query->first();
+
+            if (!$framework) {
+                throw new \Exception('Invalid framework item or insufficient permissions: ' . $id);
+            }
+
+            FrameworkModel::editFramework($id, $attr);
+
+            return redirect('/')->with('success', __('app.framework_saved_successfully'));
+        } catch (\Exception $e) {
+            return back()->with('error', $e->getMessage());
+        }
+    }
+
+    /**
+     * Report a framework item
+     * 
+     * @param $id
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function reportFramework($id)
+    {
+        try {
+            parent::validateLogin();
+
+            ReportModel::addReport(auth()->id(), $id, 'ENT_FRAMEWORK');
+
+            return response()->json(array('code' => 200, 'msg' => __('app.report_successful')));
+        } catch(\Exception $e) {
+            return response()->json(array('code' => 500, 'msg' => $e->getMessage()));
         }
     }
 }

@@ -304,6 +304,35 @@ body {
     display: inline-block;
     float: right;
 }
+.framework-item-full-report {
+    margin-top: 25px;
+    padding: 20px;
+}
+.framework-item-full-report a {
+    color: rgb(100, 100, 100);
+}
+.framework-item-full-report a:hover {
+    color: rgb(100, 100, 100);
+    text-decoration: underline;
+}
+.framework-submit-title {
+    margin-top: 30px;
+    padding: 10px;
+    font-size: 2.5em;
+    color: rgb(67, 91, 115);
+}
+.framework-submit-form {
+    padding: 20px;
+}
+.framework-edit-title {
+    margin-top: 30px;
+    padding: 10px;
+    font-size: 2.5em;
+    color: rgb(67, 91, 115);
+}
+.framework-edit-form {
+    padding: 20px;
+}
 
 .github {
     margin-left: 20px;

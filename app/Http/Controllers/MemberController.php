@@ -65,4 +65,20 @@ class MemberController extends Controller
             return response()->json(array('code' => 500, 'msg' => $e->getMessage()));
         }
     }
+
+    /**
+     * Redirect to own profile
+     * 
+     * @return mixed
+     */
+    public function profile()
+    {
+        try {
+            parent::validateLogin();
+
+            return redirect('/user/' . auth()->id());
+        } catch (\Exception $e) {
+            return back()->with('error', $e->getMessage());
+        }
+    }
 }

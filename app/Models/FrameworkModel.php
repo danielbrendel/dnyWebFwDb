@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 use App\Models\User;
 use App\Models\ImageModel;
 
@@ -22,10 +23,11 @@ class FrameworkModel extends Model
      * @param $attr
      * @param $item
      * @param $userId
+     * @param $isEdited
      * @return int
      * @throws \Exception
      */
-    private static function storeFramework($attr, $item, $userId = null)
+    private static function storeFramework($attr, $item, $userId = null, $isEdited = false)
     {
         try {
             if (strpos($attr['github'], 'https://github.com') !== 0) {
@@ -36,12 +38,21 @@ class FrameworkModel extends Model
                 $item->userId = auth()->id();
             }
 
+            if (!$isEdited) {
+                $item->approved = false;
+            }
+
+            if ((!isset($attr['tags'])) || ($attr['tags'] === null)) {
+                $attr['tags'] = '';
+            }
+
             $item->slug = Str::slug($attr['name']);
             $item->name = $attr['name'];
             $item->langId = $attr['lang'];
             $item->creator = $attr['creator'];
+            $item->summary = $attr['summary'];
             $item->description = $attr['description'];
-            $item->tags = $attr['tags'] . ' ';
+            $item->tags = $attr['tags'];
             $item->github = str_replace('https://github.com/', '', $attr['github']);
             $item->website = $attr['website'];
             $item->twitter = $attr['twitter'];
@@ -67,7 +78,7 @@ class FrameworkModel extends Model
                     throw new \Exception('Invalid image uploaded');
                 }
 
-                if (!ImageModel::createThumbFile($fullFile, static::getImageType($fext, $baseFile), $baseFile, $fext)) {
+                if (!ImageModel::createThumbFile($fullFile, ImageModel::getImageType($fext, $baseFile), $baseFile, $fext)) {
                     throw new \Exception('createThumbFile failed', 500);
                 }
 
@@ -117,7 +128,7 @@ class FrameworkModel extends Model
                 throw new \Exception('Insufficient permissions');
             }
 
-            return static::storeFramework($attr, $item, null);
+            return static::storeFramework($attr, $item, null, true);
         } catch (\Exception $e) {
             throw $e;
         }
@@ -247,16 +258,17 @@ class FrameworkModel extends Model
      * Get framework item by slug
      * 
      * @param $slug
+     * @param $check_flags
      * @return mixed
      * @throws \Exception
      */
-    public static function getBySlug($slug, $check_approval = true)
+    public static function getBySlug($slug, $check_flags = true)
     {
         try {
-            $query = static::where('slug', '=', $slug)->where('locked', '=', false);
+            $query = static::where('slug', '=', $slug);
 
-            if ($check_approval) {
-                $query->where('approved', '=', true);
+            if ($check_flags) {
+                $query->where('locked', '=', false)->where('approved', '=', true);
             }
 
             return $query->first();

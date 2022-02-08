@@ -2260,6 +2260,10 @@ window.vue = new Vue({
 
     var html = "\n                <div class=\"review\">\n                    <div class=\"review-header\">\n                        <div class=\"review-header-left\">\n                            <img src=\"" + window.location.origin + '/gfx/avatars/' + elem.userData.avatar + "\" width=\"64\" height=\"64\">\n                        </div>\n\n                        <div class=\"review-header-right\">\n                            <div class=\"review-header-right-username\"><a href=\"\">" + elem.userData.username + "</a></div>\n                            \n                            <div class=\"review-header-right-stars\">" + stars + "</div>\n                        </div>\n                    </div>\n\n                    <div class=\"review-content\">" + elem.content + "</div>\n\n                    <div class=\"review-footer\">\n                        " + options + "\n                    </div>\n                </div>\n            ";
     return html;
+  }), _defineProperty(_methods, "reportFramework", function reportFramework(id) {
+    window.vue.ajaxRequest('get', window.location.origin + '/framework/' + id + '/report', {}, function (response) {
+      alert(response.msg);
+    });
   }), _methods)
 });
 

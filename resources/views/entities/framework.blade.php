@@ -12,7 +12,18 @@
                     <div class="framework-item-full-image" style="background-image: url('{{ url('/gfx/logos/' . $framework->logo) }}')"></div>
 
                     <div class="framework-item-full-about">
-                        <div class="framework-item-full-about-title">{{ $framework->name }}</div>
+                        <div class="framework-item-full-about-title">
+                            {{ $framework->name }}
+
+                            @if (($user->admin) || ($user->id == $framework->userId))
+                                <div class="is-inline-block is-pointer" title="{{ __('app.edit_framework') }}" onclick="location.href = '{{ url('/framework/' . $framework->id . '/edit') }}';"><i class="far fa-edit"></i></div>
+                            @endif
+
+                            @if ($user->admin)
+                                <div class="is-inline-block is-pointer" title="{{ __('app.lock_framework') }}" onclick="location.href = '{{ url('/admin/entity/lock/?id=' . $framework->id . '&type=ENT_FRAMEWORK') }}';"><i class="fas fa-lock"></i></div>
+                            @endif
+                        </div>
+
                         <div class="framework-item-full-about-hint">{{ $framework->summary }}</div>
                         <div class="framework-item-full-about-tags">
                             @foreach ($framework->tags as $tag)
@@ -32,13 +43,17 @@
                     </div>
 
                     <div class="framework-item-full-links">
+                        @if (($framework->twitter !== null) && (is_string($framework->twitter)) && (strlen($framework->twitter) > 0))
                         <div class="framework-item-full-links-twitter">
                             <i class="fab fa-twitter"></i>&nbsp;<a href="https://twitter.com/{{ $framework->twitter }}">{{ $framework->twitter }}</a>
                         </div>
+                        @endif
 
+                        @if (($framework->website !== null) && (is_string($framework->website)) && (strlen($framework->website) > 0))
                         <div class="framework-item-full-links-homepage">
                             <i class="fas fa-globe"></i>&nbsp;<a href="{{ $framework->website }}">{{ $framework->website }}</a>
                         </div>
+                        @endif
                     </div>
 
                     <div class="framework-item-full-stats">
@@ -61,6 +76,14 @@
                         </div>
                     </div>
                 </div>
+
+                @auth
+                    @if ((!$user->admin) && ($user->id !== $framework->userId))
+                        <div class="framework-item-full-report">
+                            <a href="javascript:void(0);" onclick="window.vue.reportFramework({{ $framework->id }});">{{ __('app.report') }}</a>
+                        </div>
+                    @endif
+                @endauth
 
                 <div class="reviews">
                     <div class="reviews-hint">

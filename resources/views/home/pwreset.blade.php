@@ -8,7 +8,7 @@
             <div class="column is-8">
                 <h1>{{ __('app.password_reset') }}</h1>
 
-                <div class="member-form">
+                <div>
                     <form method="POST" action="{{ url('/reset?hash=' . $hash) }}">
                         @csrf
 
