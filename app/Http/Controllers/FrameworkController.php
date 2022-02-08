@@ -283,7 +283,6 @@ class FrameworkController extends Controller
             parent::validateLogin();
 
             $attr = request()->validate([
-                'name' => 'required',
                 'summary' => 'required|max:120',
                 'lang' => 'required|numeric',
                 'description' => 'required',
@@ -307,6 +306,8 @@ class FrameworkController extends Controller
             if (!$framework) {
                 throw new \Exception('Invalid framework item or insufficient permissions: ' . $id);
             }
+
+            $attr['name'] = $framework->name;
 
             FrameworkModel::editFramework($id, $attr);
 

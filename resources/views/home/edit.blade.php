@@ -13,13 +13,6 @@
                         @csrf
 
                         <div class="field">
-                            <label class="label">{{ __('app.framework_name') }}</label>
-                            <div class="control">
-                                <input class="input" type="text" name="name" placeholder="{{ __('app.framework_name_placeholder') }}" value="{{ $framework->name }}">
-                            </div>
-                        </div>
-
-                        <div class="field">
                             <label class="label">{{ __('app.framework_logo') }}</label>
                             <div class="control">
                                 <input class="input" type="file" name="logo" data-role="file" data-button-title="{{ __('app.select_logo') }}">

@@ -8,6 +8,7 @@ use App\Models\FrameworkModel;
 use App\Models\ReportModel;
 use App\Models\CaptchaModel;
 use App\Models\ImageModel;
+use App\Models\TwitterModel;
 use App\Models\User;
 
 /**
@@ -388,6 +389,10 @@ class AdminController extends Controller
 
             $item->approved = true;
             $item->save();
+
+            if (env('TWITTERBOT_ENABLE', false)) {
+                TwitterModel::postToTwitter($item);
+            }
 
             return back()->with('flash.success', __('app.framework_approved'));
         } catch (\Exception $e) {
