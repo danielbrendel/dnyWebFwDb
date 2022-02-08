@@ -7,6 +7,7 @@ window.vue = new Vue({
         bShowRegister: false,
         bShowLogin: false,
         bShowRecover: false,
+        bShowEditProfile: false,
 
         translationTable: {
             usernameOk: 'The given name is valid and available',
@@ -14,7 +15,9 @@ window.vue = new Vue({
             nonavailableUsername: 'The given name is already in use',
             passwordMismatching: 'The passwords do not match',
             passwordMatching: 'The passwords do match',
-            reviewCount: ':count reviews'
+            reviewCount: ':count reviews',
+            confirmDeleteFramework: 'Do you really want to delete this framework item?',
+            confirmDeleteReview: 'Do you really want to delete this review?'
         },
     },
 
@@ -169,7 +172,9 @@ window.vue = new Vue({
             let tags = '';
 
             elem.tags.forEach(function(tag, index){
-                tags += '<span><a href="">#' + tag + '</a>&nbsp;</span>';
+                if (tag.length > 0) {
+                    tags += '<span><a href="' + window.location.origin + '/?tag=' + tag + '">#' + tag + '</a>&nbsp;</span>';
+                }
             });
 
             let stars = '';
@@ -226,11 +231,11 @@ window.vue = new Vue({
             let options = '';
 
             if (elem.userData.id != user) {
-                options += '<div class="review-footer-option"><a href="">Report</a>&nbsp;</div>';
+                options += '<div class="review-footer-option"><a href="javascript:void(0);" onclick="window.vue.reportReview(' + elem.id + ');">Report</a>&nbsp;</div>';
             }
 
             if ((isAdmin) || (elem.userData.id == user)) {
-                options += '<div class="review-footer-option"><a href="">Delete</a>&nbsp;</div>';
+                options += '<div class="review-footer-option"><a href="javascript:void(0);" onclick="window.vue.deleteReview(' + elem.id + ');">Delete</a>&nbsp;</div>';
             }
 
             let html = `
@@ -258,10 +263,42 @@ window.vue = new Vue({
             return html;
         },
 
+        reportUser: function(id) {
+            window.vue.ajaxRequest('get', window.location.origin + '/user/' + id + '/report', {}, function(response){
+                alert(response.msg);
+            });
+        },
+
         reportFramework: function(id) {
             window.vue.ajaxRequest('get', window.location.origin + '/framework/' + id + '/report', {}, function(response){
                 alert(response.msg);
             });
-        }
+        },
+
+        deleteFramework: function(id) {
+            if (!confirm(window.vue.translationTable.confirmDeleteFramework)) {
+                return;
+            }
+
+            window.vue.ajaxRequest('get', window.location.origin + '/framework/' + id + '/delete', {}, function(response){
+                alert(response.msg);
+            });
+        },
+
+        reportReview: function(id) {
+            window.vue.ajaxRequest('get', window.location.origin + '/review/' + id + '/report', {}, function(response){
+                alert(response.msg);
+            });
+        },
+
+        deleteReview: function(id) {
+            if (!confirm(window.vue.translationTable.confirmDeleteReview)) {
+                return;
+            }
+
+            window.vue.ajaxRequest('get', window.location.origin + '/review/' + id + '/delete', {}, function(response){
+                alert(response.msg);
+            });
+        },
     }
 });

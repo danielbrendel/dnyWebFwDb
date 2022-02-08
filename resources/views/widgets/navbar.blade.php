@@ -22,24 +22,13 @@
 
                 <div class="navbar-dropdown is-dropdown-aligned is-hidden" id="language-dropdown">
                     @foreach (\App\Models\LanguageModel::getLanguages() as $item)
-                        <a class="navbar-item" href="#">{{ $item->language }}</a>
+                        <a class="navbar-item" href="{{ url('/') }}?lang={{ $item->id }}">{{ $item->language }}</a>
                     @endforeach
                 </div>
             </div>
 
-            <div class="navbar-item has-dropdown is-hoverable is-inline-block">
-                <a class="navbar-link is-top-5" href="javascript:void(0);" onclick="window.vue.toggleDropdown(document.getElementById('sorting-dropdown'));">
-                    {{ __('app.select_sorting') }}
-                </a>
-
-                <div class="navbar-dropdown is-dropdown-aligned is-hidden" id="sorting-dropdown">
-                    <a class="navbar-item" href="#">{{ __('app.sorting_latest') }}</a>
-                    <a class="navbar-item" href="#">{{ __('app.sorting_hearts') }}</a>
-                </div>
-            </div>
-
             <div class="control has-icons-right is-inline-block is-mobile-top-5">
-                <input class="input is-border-rounded is-input-navbar" type="text" placeholder="{{ __('app.search_framework') }}" onkeypress="if (event.which === 13) location.href='{{ url('/') }}';">
+                <input class="input is-border-rounded is-input-navbar" type="text" placeholder="{{ __('app.search_framework') }}" value="@if (isset($_GET['text_search'])) {{ $_GET['text_search'] }} @endif" onkeypress="if (event.which === 13) location.href='{{ url('/') }}?text_search=' + this.value;">
 
                 <span class="icon is-small is-right">
                     <i class="fas fa-search"></i>
@@ -76,7 +65,7 @@
             </div>
 
             <div class="navbar-item">
-                <div class="is-top-5">
+                <div class="@if ((!isset($metro)) || ($metro === false)) is-top-5 @endif">
                     <img class="avatar is-pointer" src="{{ asset('gfx/avatars/' . $user->avatar) }}" title="{{ __('app.profile') }}"  onclick="location.href='{{ url('/profile') }}';">&nbsp;<span class="is-mobile-like-screen-width"><a class="is-color-grey" href="javascript:void(0);" onclick="location.href='{{ url('/profile') }}';">{{ __('app.profile') }}</a></span>
                 </div>
             </div>

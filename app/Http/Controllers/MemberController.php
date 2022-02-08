@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\CaptchaModel;
+use App\Models\ReviewModel;
+use App\Models\ReportModel;
 use App\Models\User;
 
 /**
@@ -79,6 +81,84 @@ class MemberController extends Controller
             return redirect('/user/' . auth()->id());
         } catch (\Exception $e) {
             return back()->with('error', $e->getMessage());
+        }
+    }
+
+    /**
+     * Save profile data
+     * 
+     * @return mixed
+     */
+    public function saveProfile()
+    {
+        try {
+            parent::validateLogin();
+
+            $attr = request()->validate([
+                'location' => 'nullable',
+                'bio' => 'nullable',
+                'twitter' => 'nullable',
+                'password' => 'nullable',
+                'password_confirmation' => 'nullable',
+                'email' => 'nullable|email',
+                'newsletter' => 'nullable|numeric'
+            ]);
+
+            if (!isset($attr['newsletter'])) {
+                $attr['newsletter'] = 0;
+            }
+
+            User::saveUserProfile(auth()->id(), $attr);
+
+            return back()->with('flash.success', __('app.profile_saved'));
+        } catch (\Exception $e) {
+            return back()->with('error', $e->getMessage());
+        }
+    }
+
+    /**
+     * Query reviews of a specific user
+     * 
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function queryReviews()
+    {
+        try {
+            $userId = request('userId');
+            $paginate = request('paginate', null);
+
+            $data = ReviewModel::queryUserReviews($userId, $paginate);
+            foreach ($data as &$item) {
+                $user = User::where('id', '=', $item->userId)->first();
+
+                $item->userData = new \stdClass();
+                $item->userData->id = $user->id;
+                $item->userData->username = $user->username;
+                $item->userData->avatar = $user->avatar;
+            }
+
+            return response()->json(array('code' => 200, 'data' => $data->toArray()));
+        } catch (\Exception $e) {
+            return response()->json(array('code' => 500, 'msg' => $e->getMessage()));
+        }
+    }
+
+    /**
+     * Report a user
+     * 
+     * @param $id
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function reportUser($id)
+    {
+        try {
+            parent::validateLogin();
+
+            ReportModel::addReport(auth()->id(), $id, 'ENT_USER');
+
+            return response()->json(array('code' => 200, 'msg' => __('app.report_successful')));
+        } catch (\Exception $e) {
+            return response()->json(array('code' => 500, 'msg' => $e->getMessage()));
         }
     }
 }

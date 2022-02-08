@@ -329,6 +329,137 @@ class User extends Authenticatable
     }
 
     /**
+     * Save user profile settings and data
+     * 
+     * @param $id
+     * @param $attr
+     * @return void
+     * @throws \Exception
+     */
+    public static function saveUserProfile($id, $attr)
+    {
+        try {
+            $user = static::where('id', '=', $id)->first();
+            if (($user) && (!$user->locked)) {
+                if (isset($attr['location'])) {
+                    $user->location = $attr['location'];
+                }
+
+                if (isset($attr['bio'])) {
+                    $user->bio = $attr['bio'];
+                }
+
+                if (isset($attr['twitter'])) {
+                    $user->twitter = $attr['twitter'];
+                    $user->twitter = str_replace('https://twitter.com/', '', $user->twitter);
+                    $user->twitter = str_replace('@', '', $user->twitter);
+                }
+
+                if ((isset($attr['password'])) && (isset($attr['password_confirmation']))) {
+                    if ($attr['password'] !== $attr['password_confirmation']) {
+                        throw new \Exception(__('app.password_mismatch'));
+                    }
+
+                    static::changePassword($id, $attr['password']);
+                }
+
+                if (isset($attr['email'])) {
+                    static::changeEMail($id, $attr['email']);
+                }
+
+                if (isset($attr['newsletter'])) {
+                    $user->newsletter = $attr['newsletter'];
+                }
+
+                $av = request()->file('avatar');
+                if ($av != null) {
+                    $tmpName = md5(random_bytes(55));
+
+                    $av->move(public_path() . '/gfx/avatars/', $tmpName . '.' . $av->getClientOriginalExtension());
+
+                    list($width, $height) = getimagesize(public_path() . '/gfx/avatars/' . $tmpName . '.' . $av->getClientOriginalExtension());
+
+                    $avimg = imagecreatetruecolor(128, 128);
+                    if (!$avimg)
+                        throw new \Exception('imagecreatetruecolor() failed');
+
+                    $srcimage = null;
+                    $newname =  $tmpName . '.' . $av->getClientOriginalExtension();
+                    switch (ImageModel::getImageType($av->getClientOriginalExtension(), public_path() . '/gfx/avatars/' . $tmpName)) {
+                        case IMAGETYPE_PNG:
+                            $srcimage = imagecreatefrompng(public_path() . '/gfx/avatars/' . $tmpName . '.' . $av->getClientOriginalExtension());
+                            imagecopyresampled($avimg, $srcimage, 0, 0, 0, 0, 128, 128, $width, $height);
+                            imagepng($avimg, public_path() . '/gfx/avatars/' . $newname);
+                            break;
+                        case IMAGETYPE_JPEG:
+                            $srcimage = imagecreatefromjpeg(public_path() . '/gfx/avatars/' . $tmpName . '.' . $av->getClientOriginalExtension());
+                            imagecopyresampled($avimg, $srcimage, 0, 0, 0, 0, 128, 128, $width, $height);
+                            imagejpeg($avimg, public_path() . '/gfx/avatars/' . $newname);
+                            break;
+                        default:
+                            throw new \Exception('Invalid image file: ' . $av->getClientOriginalExtension());
+                            break;
+                    }
+
+                    $user->avatar = $newname;
+                }
+
+                $user->save();
+            }
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
+
+    /**
+     * Change password
+     *
+     * @param $id
+     * @param $password
+     * @throws Exception|Throwable
+     */
+    public static function changePassword($id, $password)
+    {
+        try {
+            $user = static::where('id', '=', $id)->first();
+            if (($user) && (!$user->locked)) {
+                $user->password = password_hash($password, PASSWORD_BCRYPT);
+                $user->save();
+
+                $html = view('mail.pw_changed', ['name' => $user->username])->render();
+                MailerModel::sendMail($user->email, __('app.password_changed'), $html);
+            }
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
+
+    /**
+     * Change E-Mail
+     *
+     * @param $id
+     * @param $email
+     * @throws Exception|Throwable
+     */
+    public static function changeEMail($id, $email)
+    {
+        try {
+            $user = static::where('id', '=', $id)->first();
+            if (($user) && (!$user->locked) && ($user->email !== $email)) {
+                $oldMail = $user->email;
+                $user->email = $email;
+                $user->save();
+
+                $html = view('mail.email_changed', ['name' => $user->username, 'email' => $email])->render();
+                MailerModel::sendMail($user->email, __('app.email_changed'), $html);
+                MailerModel::sendMail($oldMail, __('app.email_changed'), $html);
+            }
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
+
+    /**
      * Delete user account
      * 
      * @param $userId

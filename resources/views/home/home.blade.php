@@ -20,9 +20,20 @@
     <script>
         window.paginate = null;
         window.filterLang = '_all_';
-        window.sorting = 'latest';
         window.filterText = null;
         window.filterTag = null;
+
+        @if (isset($_GET['lang']))
+            window.filterLang = '{{ $_GET['lang'] }}';
+        @endif
+
+        @if (isset($_GET['text_search']))
+            window.filterText = '{{ $_GET['text_search'] }}';
+        @endif
+
+        @if (isset($_GET['tag']))
+            window.filterTag = '{{ $_GET['tag'] }}';
+        @endif
 
         window.queryFrameworkItems = function() {
             let content = document.getElementById('framework-content');
@@ -37,7 +48,6 @@
             window.vue.ajaxRequest('post', '{{ url('/framework/query') }}', {
                 paginate: window.paginate,
                 lang: window.filterLang,
-                sorting: window.sorting,
                 text_search: window.filterText,
                 tag: window.filterTag
             },
@@ -50,11 +60,7 @@
                     });
 
                     if (response.data.length > 0) {
-                        if (window.sorting === 'latest') {
-                            window.paginate = response.data[response.data.length - 1].id;
-                        } else if (window.sorting === 'hearts') {
-                            window.paginate = response.data[response.data.length - 1].hearts;
-                        }
+                        window.paginate = response.data[response.data.length - 1].id;
                     }
 
                     let spinner = document.getElementById('spinner');

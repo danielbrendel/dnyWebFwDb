@@ -29,12 +29,11 @@ class FrameworkController extends Controller
     {
         try {
             $lang = request('lang', '_all_');
-            $sorting = request('sorting', 'latest');
             $paginate = request('paginate', null);
             $text_search = request('text_search', null);
             $tag = request('tag', null);
 
-            $data = FrameworkModel::queryFrameworks($lang, $sorting, $paginate, $text_search, $tag);
+            $data = FrameworkModel::queryFrameworks($lang, $paginate, $text_search, $tag);
             foreach ($data as &$item) {
                 $user = User::where('id', '=', $item->userId)->first();
                 $item->userData = new \stdClass();
@@ -332,6 +331,85 @@ class FrameworkController extends Controller
 
             return response()->json(array('code' => 200, 'msg' => __('app.report_successful')));
         } catch(\Exception $e) {
+            return response()->json(array('code' => 500, 'msg' => $e->getMessage()));
+        }
+    }
+
+    /**
+     * Report a review
+     * 
+     * @param $id
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function reportReview($id)
+    {
+        try {
+            parent::validateLogin();
+
+            ReportModel::addReport(auth()->id(), $id, 'ENT_REVIEW');
+
+            return response()->json(array('code' => 200, 'msg' => __('app.report_successful')));
+        } catch (\Exception $e) {
+            return response()->json(array('code' => 500, 'msg' => $e->getMessage()));
+        }
+    }
+
+    /**
+     * Delete a review
+     * 
+     * @param $id
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function deleteReview($id)
+    {
+        try {
+            parent::validateLogin();
+
+            $user = User::getByAuthId();
+
+            $item = ReviewModel::where('id', '=', $id)->first();
+            if ($item->locked) {
+                throw new \Exception('Item is locked');
+            }
+
+            if ((!$item->userId !== $user->id) && (!$user->admin)) {
+                throw new \Exception('Insufficient permissions');
+            }
+
+            $item->delete();
+
+            return response()->json(array('code' => 200, 'msg' => __('app.removal_successful')));
+        } catch (\Exception $e) {
+            return response()->json(array('code' => 500, 'msg' => $e->getMessage()));
+        }
+    }
+
+    /**
+     * Delete a framework item
+     * 
+     * @param $id
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function deleteFramework($id)
+    {
+        try {
+            parent::validateLogin();
+
+            $user = User::getByAuthId();
+
+            $item = ReviewModel::where('id', '=', $id)->first();
+            if ($item->locked) {
+                throw new \Exception('Item is locked');
+            }
+
+            if ((!$item->userId !== $user->id) && (!$user->admin)) {
+                throw new \Exception('Insufficient permissions');
+            }
+
+            AppModel::deleteEntity($item->id, 'ENT_FRAMEWORK');
+
+            return response()->json(array('code' => 200, 'msg' => __('app.removal_successful')));
+        } catch (\Exception $e) {
             return response()->json(array('code' => 500, 'msg' => $e->getMessage()));
         }
     }

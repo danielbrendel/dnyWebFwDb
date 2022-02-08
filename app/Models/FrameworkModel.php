@@ -52,7 +52,7 @@ class FrameworkModel extends Model
             $item->creator = $attr['creator'];
             $item->summary = $attr['summary'];
             $item->description = $attr['description'];
-            $item->tags = $attr['tags'];
+            $item->tags = $attr['tags'] . ' ';
             $item->github = str_replace('https://github.com/', '', $attr['github']);
             $item->website = $attr['website'];
             $item->twitter = $attr['twitter'];
@@ -135,41 +135,18 @@ class FrameworkModel extends Model
     }
 
     /**
-     * Validate given sorting type
-     * 
-     * @param $type
-     * @return void
-     * @throws \Exception
-     */
-    private static function validateSortingType($type)
-    {
-        try {
-            $types = array('latest', 'hearts');
-
-            if (!in_array($type, $types)) {
-                throw new \Exception('Invalid sorting type: ' . $type);
-            }
-        } catch (\Exception $e) {
-            throw $e;
-        }
-    }
-
-    /**
      * Query a list of frameworks
      * 
      * @param $lang
-     * @param $sorting
      * @param $paginate
      * @param $text_search
      * @param $tag
      * @return mixed
      * @throws \Exception
      */
-    public static function queryFrameworks($lang = '_all_', $sorting = 'latest', $paginate = null, $text_search = null, $tag = null)
+    public static function queryFrameworks($lang = '_all_', $paginate = null, $text_search = null, $tag = null)
     {
         try {
-            static::validateSortingType($sorting);
-
             if ($lang !== '_all_') {
                 $query = static::where('langId', '=', $lang);
             } else {
@@ -177,15 +154,12 @@ class FrameworkModel extends Model
             }
 
             if ($paginate !== null) {
-                if ($sorting === 'latest') {
-                    $query->where('id', '<', $paginate);
-                } else if ($sorting === 'hearts') {
-                    $query->where('hearts', '<', $paginate);
-                }
+                $query->where('id', '<', $paginate);
             }
 
             if ($text_search !== null) {
                 $query->whereRaw('LOWER(name) LIKE ?', ['%' . trim(strtolower($text_search)) . '%'])
+                    ->orWhereRaw('LOWER(summary) LIKE ?', ['%' . trim(strtolower($text_search)) . '%'])
                     ->orWhereRaw('LOWER(description) LIKE ?', ['%' . trim(strtolower($text_search)) . '%']);
             }
 
@@ -195,13 +169,7 @@ class FrameworkModel extends Model
 
             $query->where('approved', '=', true)->where('locked', '=', false);
 
-            if ($sorting === 'latest') {
-                $query->orderBy('id', 'desc');
-            } else if ($sorting === 'hearts') {
-                $query->orderBy('hearts', 'desc');
-            }
-
-            return $query->limit(env('APP_MAXQUERYCOUNT'))->get();
+            return $query->orderBy('id', 'desc')->limit(env('APP_MAXQUERYCOUNT'))->get();
         } catch (\Exception $e) {
             throw $e;
         }

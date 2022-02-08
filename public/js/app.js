@@ -2072,13 +2072,16 @@ window.vue = new Vue({
     bShowRegister: false,
     bShowLogin: false,
     bShowRecover: false,
+    bShowEditProfile: false,
     translationTable: {
       usernameOk: 'The given name is valid and available',
       invalidUsername: 'The name is invalid. Please use only alphanumeric characters, numbers 0-9 and the characters \'-\' and \'_\'. Also number only identifiers are considered invalid',
       nonavailableUsername: 'The given name is already in use',
       passwordMismatching: 'The passwords do not match',
       passwordMatching: 'The passwords do match',
-      reviewCount: ':count reviews'
+      reviewCount: ':count reviews',
+      confirmDeleteFramework: 'Do you really want to delete this framework item?',
+      confirmDeleteReview: 'Do you really want to delete this review?'
     }
   },
   methods: (_methods = {
@@ -2218,7 +2221,9 @@ window.vue = new Vue({
   }), _defineProperty(_methods, "renderFrameworkItem", function renderFrameworkItem(elem) {
     var tags = '';
     elem.tags.forEach(function (tag, index) {
-      tags += '<span><a href="">#' + tag + '</a>&nbsp;</span>';
+      if (tag.length > 0) {
+        tags += '<span><a href="' + window.location.origin + '/?tag=' + tag + '">#' + tag + '</a>&nbsp;</span>';
+      }
     });
     var stars = '';
 
@@ -2251,17 +2256,41 @@ window.vue = new Vue({
     var options = '';
 
     if (elem.userData.id != user) {
-      options += '<div class="review-footer-option"><a href="">Report</a>&nbsp;</div>';
+      options += '<div class="review-footer-option"><a href="javascript:void(0);" onclick="window.vue.reportReview(' + elem.id + ');">Report</a>&nbsp;</div>';
     }
 
     if (isAdmin || elem.userData.id == user) {
-      options += '<div class="review-footer-option"><a href="">Delete</a>&nbsp;</div>';
+      options += '<div class="review-footer-option"><a href="javascript:void(0);" onclick="window.vue.deleteReview(' + elem.id + ');">Delete</a>&nbsp;</div>';
     }
 
     var html = "\n                <div class=\"review\">\n                    <div class=\"review-header\">\n                        <div class=\"review-header-left\">\n                            <img src=\"" + window.location.origin + '/gfx/avatars/' + elem.userData.avatar + "\" width=\"64\" height=\"64\">\n                        </div>\n\n                        <div class=\"review-header-right\">\n                            <div class=\"review-header-right-username\"><a href=\"\">" + elem.userData.username + "</a></div>\n                            \n                            <div class=\"review-header-right-stars\">" + stars + "</div>\n                        </div>\n                    </div>\n\n                    <div class=\"review-content\">" + elem.content + "</div>\n\n                    <div class=\"review-footer\">\n                        " + options + "\n                    </div>\n                </div>\n            ";
     return html;
+  }), _defineProperty(_methods, "reportUser", function reportUser(id) {
+    window.vue.ajaxRequest('get', window.location.origin + '/user/' + id + '/report', {}, function (response) {
+      alert(response.msg);
+    });
   }), _defineProperty(_methods, "reportFramework", function reportFramework(id) {
     window.vue.ajaxRequest('get', window.location.origin + '/framework/' + id + '/report', {}, function (response) {
+      alert(response.msg);
+    });
+  }), _defineProperty(_methods, "deleteFramework", function deleteFramework(id) {
+    if (!confirm(window.vue.translationTable.confirmDeleteFramework)) {
+      return;
+    }
+
+    window.vue.ajaxRequest('get', window.location.origin + '/framework/' + id + '/delete', {}, function (response) {
+      alert(response.msg);
+    });
+  }), _defineProperty(_methods, "reportReview", function reportReview(id) {
+    window.vue.ajaxRequest('get', window.location.origin + '/review/' + id + '/report', {}, function (response) {
+      alert(response.msg);
+    });
+  }), _defineProperty(_methods, "deleteReview", function deleteReview(id) {
+    if (!confirm(window.vue.translationTable.confirmDeleteReview)) {
+      return;
+    }
+
+    window.vue.ajaxRequest('get', window.location.origin + '/review/' + id + '/delete', {}, function (response) {
       alert(response.msg);
     });
   }), _methods)

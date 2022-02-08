@@ -17,6 +17,7 @@
 
                             @if (($user->admin) || ($user->id == $framework->userId))
                                 <div class="is-inline-block is-pointer" title="{{ __('app.edit_framework') }}" onclick="location.href = '{{ url('/framework/' . $framework->id . '/edit') }}';"><i class="far fa-edit"></i></div>
+                                <div class="is-inline-block is-pointer" title="{{ __('app.delete_framework') }}" onclick="window.vue.deleteFramework({{ $framework->id }});"><i class="fas fa-times"></i></div>
                             @endif
 
                             @if ($user->admin)

@@ -64,7 +64,30 @@ class ReviewModel extends Model
     public static function queryReviews($frameworkId, $paginate = null)
     {
         try {
-            $query = static::where('frameworkId', '=', $frameworkId);
+            $query = static::where('frameworkId', '=', $frameworkId)->where('locked', '=', false);
+
+            if ($paginate !== null) {
+                $query->where('id', '<', $paginate);
+            }
+
+            return $query->orderBy('id', 'desc')->limit(env('APP_MAXQUERYCOUNT'))->get();
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
+
+    /**
+     * Query reviews of a specific user
+     * 
+     * @param $userId
+     * @param $paginate
+     * @return mixed
+     * @throws \Exception
+     */
+    public static function queryUserReviews($userId, $paginate = null)
+    {
+        try {
+            $query = static::where('userId', '=', $userId)->where('locked', '=', false);
 
             if ($paginate !== null) {
                 $query->where('id', '<', $paginate);
