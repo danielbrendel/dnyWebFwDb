@@ -17,7 +17,8 @@ window.vue = new Vue({
             passwordMatching: 'The passwords do match',
             reviewCount: ':count reviews',
             confirmDeleteFramework: 'Do you really want to delete this framework item?',
-            confirmDeleteReview: 'Do you really want to delete this review?'
+            confirmDeleteReview: 'Do you really want to delete this review?',
+            confirmDeleteAccount: 'Are you sure you want to delete your account? Please enter your password to proceed with deletion.'
         },
     },
 
@@ -293,7 +294,7 @@ window.vue = new Vue({
                         </div>
                     </div>
 
-                    <div class="review-content">` + elem.content + `</div>
+                    <div class="review-content is-wrap">` + elem.content + `</div>
 
                     <div class="review-footer">
                         ` + options + `
@@ -383,6 +384,21 @@ window.vue = new Vue({
             }
 
             document.getElementById('rating').value = value;
+        },
+
+        deleteAccount: function() {
+            let pw = prompt(window.vue.translationTable.confirmDeleteAccount);
+            if ((pw === null) || (pw.length === 0)) {
+                return;
+            }
+
+            window.vue.ajaxRequest('post', window.location.origin + '/user/account/delete', { password: pw }, function(response){
+                alert(response.msg);
+
+                if (response.code == 200) {
+                    location.href = window.location.origin;
+                }
+            });
         }
     }
 });

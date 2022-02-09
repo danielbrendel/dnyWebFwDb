@@ -27,6 +27,7 @@ class CreateUsersTable extends Migration
             $table->string('location');
             $table->string('twitter');
             $table->boolean('newsletter')->default(false);
+            $table->string('newsletter_token')->default('');
             $table->boolean('admin')->default(false);
             $table->boolean('locked')->default(false);
             $table->timestamps();

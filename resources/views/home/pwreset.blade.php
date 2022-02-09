@@ -23,9 +23,9 @@
                         </div>
 
                         <div class="field">
-                            <label class="label">{{ __('app.password_confirm') }}</label>
+                            <label class="label">{{ __('app.password_confirmation') }}</label>
                             <p class="control has-icons-left">
-                                <input class="input" type="password" name="password_confirm" placeholder="{{ __('app.password_confirm') }}">
+                                <input class="input" type="password" name="password_confirm" placeholder="{{ __('app.password_confirmation') }}">
                                 <span class="icon is-small is-left">
                                     <i class="fas fa-lock"></i>
                                 </span>

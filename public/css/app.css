@@ -856,3 +856,16 @@ body {
 .cookie-consent-button a:hover {
   color: #969696;
 }
+
+.report-profile {
+  margin-top: 20px;
+}
+
+.report-profile a {
+  color: #646464;
+}
+
+.report-profile a:hover {
+  color: #787878;
+  text-decoration: underline;
+}

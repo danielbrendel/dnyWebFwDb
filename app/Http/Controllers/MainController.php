@@ -100,7 +100,7 @@ class MainController extends Controller
 
             $id = User::register($attr);
 
-            return redirect('/')->with('flash.success', __('app.registration_success', ['id' => $id]));
+            return redirect('/')->with('success', __('app.register_confirm_email', ['id' => $id]));
         } catch (\Exception $e) {
             return redirect('/')->with('flash.error', $e->getMessage());
         }
@@ -211,6 +211,27 @@ class MainController extends Controller
             return redirect('/')->with('flash.success', __('app.logout_successful'));
         } catch (\Exception $e) {
             return back()->with('error', $e->getMessage());
+        }
+    }
+
+    /**
+     * Perform newsletter cronjob
+     *
+     * @param $password
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function cronjob_newsletter($password)
+    {
+        try {
+            if ($password !== env('APP_CRONPW')) {
+                return response()->json(array('code' => 403));
+            }
+
+            $data = AppModel::newsletterJob();
+
+            return response()->json(array('code' => 200, 'data' => $data));
+        } catch (Exception $e) {
+            return response()->json(array('code' => 500, 'msg' => $e->getMessage()));
         }
     }
 }

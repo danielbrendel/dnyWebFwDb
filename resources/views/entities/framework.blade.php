@@ -15,14 +15,16 @@
                         <div class="framework-item-full-about-title">
                             {{ $framework->name }}
 
-                            @if (($user->admin) || ($user->id == $framework->userId))
-                                <div class="is-inline-block is-pointer" title="{{ __('app.edit_framework') }}" onclick="location.href = '{{ url('/framework/' . $framework->id . '/edit') }}';"><i class="far fa-edit"></i></div>
-                                <div class="is-inline-block is-pointer" title="{{ __('app.delete_framework') }}" onclick="window.vue.deleteFramework({{ $framework->id }});"><i class="fas fa-times"></i></div>
-                            @endif
+                            @auth
+                                @if (($user->admin) || ($user->id == $framework->userId))
+                                    <div class="is-inline-block is-pointer" title="{{ __('app.edit_framework') }}" onclick="location.href = '{{ url('/framework/' . $framework->id . '/edit') }}';"><i class="far fa-edit"></i></div>
+                                    <div class="is-inline-block is-pointer" title="{{ __('app.delete_framework') }}" onclick="window.vue.deleteFramework({{ $framework->id }});"><i class="fas fa-times"></i></div>
+                                @endif
 
-                            @if ($user->admin)
-                                <div class="is-inline-block is-pointer" title="{{ __('app.lock_framework') }}" onclick="location.href = '{{ url('/admin/entity/lock/?id=' . $framework->id . '&type=ENT_FRAMEWORK') }}';"><i class="fas fa-lock"></i></div>
-                            @endif
+                                @if ($user->admin)
+                                    <div class="is-inline-block is-pointer" title="{{ __('app.lock_framework') }}" onclick="location.href = '{{ url('/admin/entity/lock/?id=' . $framework->id . '&type=ENT_FRAMEWORK') }}';"><i class="fas fa-lock"></i></div>
+                                @endif
+                            @endauth
                         </div>
 
                         <div class="framework-item-full-about-hint">{{ $framework->summary }}</div>

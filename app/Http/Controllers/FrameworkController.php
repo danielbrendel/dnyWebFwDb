@@ -11,6 +11,7 @@ use App\Models\GithubModel;
 use App\Models\CaptchaModel;
 use App\Models\ReviewModel;
 use App\Models\ReportModel;
+use App\Models\PushModel;
 use App\Models\User;
 
 /**
@@ -350,12 +351,17 @@ class FrameworkController extends Controller
                 'rating' => 'required|numeric|min:1|max:5'
             ]);
 
+            $framework = FrameworkModel::where('id', '=', $id)->first();
+            $reviewer = User::where('id', '=', auth()->id())->first();
+
             $already = ReviewModel::where('frameworkId', '=', $id)->where('userId', '=', auth()->id())->count();
             if ($already > 0) {
                 throw new \Exception('You have already reviewed this product. Please delete your old review before reviewing again.');
             }
 
             ReviewModel::addReview(auth()->id(), $id, $attr['content'], $attr['rating']);
+
+            PushModel::addNotification(__('app.review_added_short'), __('app.review_added_long', ['reviewer' => $reviewer->username, 'framework_name' => $framework->name, 'url' => url('/view/' . $framework->slug)]), 'PUSH_REVIEWED', $framework->userId);
 
             return back()->with('flash.success', __('app.review_stored'));
         } catch (\Exception $e) {

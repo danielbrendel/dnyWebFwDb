@@ -29,21 +29,23 @@
                         {{ $profile->bio }}
                     </div>
 
-                    <div class="profile-footer">
-                        <i class="fab fa-twitter"></i>&nbsp;<a href="https://twitter.com/{{ $profile->twitter }}">&#64;{{ $profile->twitter }}</a>
-                    </div>
-
-                    @if ($profile->id === $user->id)
-                        <div class="edit-profile">
-                            <a href="javascript:void(0);" onclick="window.vue.bShowEditProfile = true;">{{ __('app.edit_profile') }}</a>
+                    @if ((is_string($profile->twitter)) && (strlen($profile->twitter) > 0))
+                        <div class="profile-footer">
+                            <i class="fab fa-twitter"></i>&nbsp;<a href="https://twitter.com/{{ $profile->twitter }}">&#64;{{ $profile->twitter }}</a>
                         </div>
-                    @else
-                        @auth
+                    @endif
+
+                    @auth
+                        @if ($profile->id === $user->id)
+                            <div class="edit-profile">
+                                <a href="javascript:void(0);" onclick="window.vue.bShowEditProfile = true;">{{ __('app.edit_profile') }}</a>
+                            </div>
+                        @else
                             <div class="report-profile">
                                 <a href="javascript:void(0);" onclick="window.vue.reportUser({{ $profile->id }});">{{ __('app.report') }}</a>
                             </div>
-                        @endauth
-                    @endif
+                        @endif
+                    @endauth
                 </div>
 
                 <div class="profile-framework-items-hint">{{ __('app.items_by_user') }}</div>
@@ -57,90 +59,100 @@
                     <div class="reviews-content" id="review-content"></div>
                 </div>
 
-                @if ($profile->id === $user->id)
-                    <div class="modal" :class="{'is-active': bShowEditProfile}">
-                        <div class="modal-background"></div>
-                        <div class="modal-card">
-                            <header class="modal-card-head is-stretched">
-                                <p class="modal-card-title">{{ __('app.edit_profile') }}</p>
-                                <button class="delete" aria-label="close" onclick="vue.bShowEditProfile = false;"></button>
-                            </header>
-                            <section class="modal-card-body is-stretched">
-                                <form method="POST" action="{{ url('/profile/save') }}" id="formEditProfile" enctype="multipart/form-data">
-                                    @csrf
+                @auth
+                    @if ($profile->id === $user->id)
+                        <div class="modal" :class="{'is-active': bShowEditProfile}">
+                            <div class="modal-background"></div>
+                            <div class="modal-card">
+                                <header class="modal-card-head is-stretched">
+                                    <p class="modal-card-title">{{ __('app.edit_profile') }}</p>
+                                    <button class="delete" aria-label="close" onclick="vue.bShowEditProfile = false;"></button>
+                                </header>
+                                <section class="modal-card-body is-stretched">
+                                    <form method="POST" action="{{ url('/profile/save') }}" id="formEditProfile" enctype="multipart/form-data">
+                                        @csrf
 
-                                    <div class="field">
-                                    <label class="label">{{ __('app.avatar') }}</label>
-                                        <div class="control">
-                                            <input type="file" class="input" name="avatar" data-role="file" data-button-title="{{ __('app.select_avatar') }}">
+                                        <div class="field">
+                                        <label class="label">{{ __('app.avatar') }}</label>
+                                            <div class="control">
+                                                <input type="file" class="input" name="avatar" data-role="file" data-button-title="{{ __('app.select_avatar') }}">
+                                            </div>
                                         </div>
-                                    </div>
 
-                                    <div class="field">
-                                        <label class="label">{{ __('app.location') }}</label>
-                                        <div class="control">
-                                            <input type="text" class="input" name="location" value="{{ $profile->location }}">
+                                        <div class="field">
+                                            <label class="label">{{ __('app.location') }}</label>
+                                            <div class="control">
+                                                <input type="text" class="input" name="location" value="{{ $profile->location }}">
+                                            </div>
                                         </div>
-                                    </div>
 
-                                    <div class="field">
-                                        <label class="label">{{ __('app.bio') }}</label>
-                                        <div class="control">
-                                            <textarea name="bio" class="input">{{ $profile->bio }}</textarea>
+                                        <div class="field">
+                                            <label class="label">{{ __('app.bio') }}</label>
+                                            <div class="control">
+                                                <textarea name="bio" class="input">{{ $profile->bio }}</textarea>
+                                            </div>
                                         </div>
-                                    </div>
 
-                                    <div class="field">
-                                        <label class="label">{{ __('app.twitter') }}</label>
-                                        <div class="control">
-                                            <input type="text" class="input" name="twitter" value="{{ $profile->twitter }}">
+                                        <div class="field">
+                                            <label class="label">{{ __('app.twitter') }}</label>
+                                            <div class="control">
+                                                <input type="text" class="input" name="twitter" value="{{ $profile->twitter }}">
+                                            </div>
                                         </div>
-                                    </div>
+
+                                        <hr/>
+
+                                        <div class="field">
+                                            <label class="label">{{ __('app.password') }}</label>
+                                            <div class="control">
+                                                <input type="password" class="input" name="password">
+                                            </div>
+                                        </div>
+
+                                        <div class="field">
+                                            <label class="label">{{ __('app.password_confirmation') }}</label>
+                                            <div class="control">
+                                                <input type="password" class="input" name="password_confirmation">
+                                            </div>
+                                        </div>
+
+                                        <hr/>
+
+                                        <div class="field">
+                                            <label class="label">{{ __('app.email') }}</label>
+                                            <div class="control">
+                                                <input type="email" class="input" name="email" value="{{ $profile->email }}">
+                                            </div>
+                                        </div>
+
+                                        <hr/>
+
+                                        <div class="field">
+                                            <div class="control">
+                                                <input type="checkbox" name="newsletter" value="1" @if ($user->newsletter) {{ 'checked' }} @endif>
+                                                <label for="newsletter">{{ __('app.subscribe_newsletter') }}</label>
+                                            </div>
+                                        </div>
+
+                                        <input type="submit" id="editprofilesubmit" class="is-hidden">
+                                    </form>
 
                                     <hr/>
 
                                     <div class="field">
-                                        <label class="label">{{ __('app.password') }}</label>
                                         <div class="control">
-                                            <input type="password" class="input" name="password">
+                                            <button class="button is-danger" onclick="window.vue.deleteAccount();">{{ __('app.delete_account') }}</button>
                                         </div>
                                     </div>
-
-                                    <div class="field">
-                                        <label class="label">{{ __('app.password_confirmation') }}</label>
-                                        <div class="control">
-                                            <input type="password" class="input" name="password_confirmation">
-                                        </div>
-                                    </div>
-
-                                    <hr/>
-
-                                    <div class="field">
-                                        <label class="label">{{ __('app.email') }}</label>
-                                        <div class="control">
-                                            <input type="email" class="input" name="email" value="{{ $profile->email }}">
-                                        </div>
-                                    </div>
-
-                                    <hr/>
-
-                                    <div class="field">
-                                        <div class="control">
-                                            <input type="checkbox" name="newsletter" value="1" @if ($user->newsletter) {{ 'checked' }} @endif>
-                                            <label for="newsletter">{{ __('app.subscribe_newsletter') }}</label>
-                                        </div>
-                                    </div>
-
-                                    <input type="submit" id="editprofilesubmit" class="is-hidden">
-                                </form>
-                            </section>
-                            <footer class="modal-card-foot is-stretched">
-                                <button class="button is-success" onclick="document.getElementById('editprofilesubmit').click();">{{ __('app.save') }}</button>
-                                <button class="button" onclick="vue.bShowEditProfile = false;">{{ __('app.cancel') }}</button>
-                            </footer>
+                                </section>
+                                <footer class="modal-card-foot is-stretched">
+                                    <button class="button is-success" onclick="document.getElementById('editprofilesubmit').click();">{{ __('app.save') }}</button>
+                                    <button class="button" onclick="vue.bShowEditProfile = false;">{{ __('app.cancel') }}</button>
+                                </footer>
+                            </div>
                         </div>
-                    </div>
-                @endif
+                    @endif
+                @endauth
             </div>
 
             <div class="column is-1"></div>

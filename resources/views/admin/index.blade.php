@@ -1,6 +1,6 @@
 @extends('layouts.layout_view')
 
-@section('title', 'Administration')
+@section('title', ' - Administration')
 
 @section('content')
     <div class="container">
@@ -34,6 +34,7 @@
                         <li><a href="#tab-page-8">{{ __('app.users') }}</a></li>
                         <li><a href="#tab-page-9">{{ __('app.approvals') }}</a></li>
                         <li><a href="#tab-page-10">{{ __('app.reports') }}</a></li>
+                        <li><a href="#tab-page-11">{{ __('app.newsletter') }}</a></li>
                     </ul>
 
                     <div class="border bd-default no-border-top p-2">
@@ -437,6 +438,32 @@
                                 @endforeach
                                 </tbody>
                             </table>
+                        </div>
+
+                        <div id="tab-page-11">
+                            <form method="POST" action="{{ url('/admin/newsletter') }}">
+                                @csrf
+
+                                <div class="field">
+                                    <label class="label">{{ __('app.subject') }}</label>
+                                    <div class="control">
+                                        <input type="text" name="subject">
+                                    </div>
+                                </div>
+
+                                <div class="field">
+                                    <label class="label">{{ __('app.content') }}</label>
+                                    <div class="control">
+                                        <textarea name="content"></textarea>
+                                    </div>
+                                </div>
+
+                                <div class="field">
+                                    <div class="control">
+                                        <input type="submit" value="{{ __('app.send') }}">
+                                    </div>
+                                </div>
+                            </form>
                         </div>
                     </div>
                 </div>

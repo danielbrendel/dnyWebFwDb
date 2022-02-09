@@ -50,6 +50,7 @@ Route::get('/profile', [MemberController::class, 'profile']);
 Route::post('/profile/save', [MemberController::class, 'saveProfile']);
 Route::get('/member/name/valid', [MemberController::class, 'usernameValidity']);
 Route::any('/user/query/reviews', [MemberController::class, 'queryReviews']);
+Route::any('/user/account/delete', [MemberController::class, 'deleteUserAccount']);
 
 Route::get('/notifications/list', [NotificationController::class, 'list']);
 Route::get('/notifications/fetch', [NotificationController::class, 'fetch']);
@@ -74,3 +75,6 @@ Route::any('/admin/approval/{id}/decline', [AdminController::class, 'declineFram
 Route::get('/admin/entity/lock', [AdminController::class, 'lockEntity']);
 Route::get('/admin/entity/delete', [AdminController::class, 'deleteEntity']);
 Route::get('/admin/entity/safe', [AdminController::class, 'setSafeEntity']);
+Route::post('/admin/newsletter', [AdminController::class, 'newsletter']);
+
+Route::any('/cronjob/newsletter/{password}', [MainController::class, 'cronjob_newsletter']);

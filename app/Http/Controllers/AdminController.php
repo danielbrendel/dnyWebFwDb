@@ -481,4 +481,25 @@ class AdminController extends Controller
             return back()->with('error', $e->getMessage());
         }
     }
+
+    /**
+     * Initiate newsletter sending progress
+     *
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function newsletter()
+    {
+        try {
+            $attr = request()->validate([
+               'subject' => 'required',
+               'content' => 'required'
+            ]);
+
+            AppModel::initNewsletter($attr['subject'], $attr['content']);
+
+            return back()->with('flash.success', __('app.newsletter_in_progress'));
+        } catch (\Exception $e) {
+            return back()->with('error', $e->getMessage());
+        }
+    }
 }

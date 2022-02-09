@@ -2081,7 +2081,8 @@ window.vue = new Vue({
       passwordMatching: 'The passwords do match',
       reviewCount: ':count reviews',
       confirmDeleteFramework: 'Do you really want to delete this framework item?',
-      confirmDeleteReview: 'Do you really want to delete this review?'
+      confirmDeleteReview: 'Do you really want to delete this review?',
+      confirmDeleteAccount: 'Are you sure you want to delete your account? Please enter your password to proceed with deletion.'
     }
   },
   methods: (_methods = {
@@ -2297,7 +2298,7 @@ window.vue = new Vue({
       options += '<div class="review-footer-option"><a href="javascript:void(0);" onclick="window.vue.deleteReview(' + elem.id + ');">Delete</a>&nbsp;</div>';
     }
 
-    var html = "\n                <div class=\"review\">\n                    <div class=\"review-header\">\n                        <div class=\"review-header-left\">\n                            <img src=\"" + window.location.origin + '/gfx/avatars/' + elem.userData.avatar + "\" width=\"64\" height=\"64\">\n                        </div>\n\n                        <div class=\"review-header-right\">\n                            <div class=\"review-header-right-username\"><a href=\"\">" + elem.userData.username + "</a></div>\n                            \n                            <div class=\"review-header-right-stars\">" + stars + "</div>\n                        </div>\n                    </div>\n\n                    <div class=\"review-content\">" + elem.content + "</div>\n\n                    <div class=\"review-footer\">\n                        " + options + "\n                    </div>\n                </div>\n            ";
+    var html = "\n                <div class=\"review\">\n                    <div class=\"review-header\">\n                        <div class=\"review-header-left\">\n                            <img src=\"" + window.location.origin + '/gfx/avatars/' + elem.userData.avatar + "\" width=\"64\" height=\"64\">\n                        </div>\n\n                        <div class=\"review-header-right\">\n                            <div class=\"review-header-right-username\"><a href=\"\">" + elem.userData.username + "</a></div>\n                            \n                            <div class=\"review-header-right-stars\">" + stars + "</div>\n                        </div>\n                    </div>\n\n                    <div class=\"review-content is-wrap\">" + elem.content + "</div>\n\n                    <div class=\"review-footer\">\n                        " + options + "\n                    </div>\n                </div>\n            ";
     return html;
   }), _defineProperty(_methods, "renderNotification", function renderNotification(elem) {
     var newItem = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
@@ -2357,6 +2358,22 @@ window.vue = new Vue({
     }
 
     document.getElementById('rating').value = value;
+  }), _defineProperty(_methods, "deleteAccount", function deleteAccount() {
+    var pw = prompt(window.vue.translationTable.confirmDeleteAccount);
+
+    if (pw === null || pw.length === 0) {
+      return;
+    }
+
+    window.vue.ajaxRequest('post', window.location.origin + '/user/account/delete', {
+      password: pw
+    }, function (response) {
+      alert(response.msg);
+
+      if (response.code == 200) {
+        location.href = window.location.origin;
+      }
+    });
   }), _methods)
 });
 

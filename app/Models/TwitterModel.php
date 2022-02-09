@@ -22,14 +22,14 @@ class TwitterModel extends Model
      * @return void
      * @throws \Exception
      */
-    private static function postToTwitter($framework)
+    public static function postToTwitter($framework)
     {
         try {
             $connection = new TwitterOAuth(env('TWITTERBOT_APIKEY',), env('TWITTERBOT_APISECRET'), env('TWITTERBOT_ACCESS_TOKEN'), env('TWITTERBOT_ACCESS_TOKEN_SECRET'));  
-            $media = $connection->upload('media/upload', ['media' => asset('gfx/logos/' . $framework->logo)]);
+            $media = $connection->upload('media/upload', ['media' => public_path() . '/gfx/logos/' . $framework->logo]);
  
             if (!isset($media->media_id_string)) {
-                throw new Exception('Failed to upload media to Twitter: ' . print_r($media, true));
+                throw new \Exception('Failed to upload media to Twitter: ' . print_r($media, true));
             }
 
             $status = $framework->name . ': ' . $framework->summary . ' - by ' . $framework->creator;

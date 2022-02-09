@@ -21,6 +21,9 @@ class CreateAppModelsTable extends Migration
             $table->string('reg_info');
             $table->string('cookie_consent');
             $table->text('head_code');
+            $table->string('newsletter_token')->nullable();
+            $table->string('newsletter_subject')->nullable();
+            $table->text('newsletter_content')->nullable();
             $table->timestamps();
         });
     }

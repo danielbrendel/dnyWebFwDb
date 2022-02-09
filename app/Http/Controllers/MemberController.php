@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\CaptchaModel;
 use App\Models\ReviewModel;
 use App\Models\ReportModel;
+use App\Models\AppModel;
 use App\Models\User;
 
 /**
@@ -157,6 +158,32 @@ class MemberController extends Controller
             ReportModel::addReport(auth()->id(), $id, 'ENT_USER');
 
             return response()->json(array('code' => 200, 'msg' => __('app.report_successful')));
+        } catch (\Exception $e) {
+            return response()->json(array('code' => 500, 'msg' => $e->getMessage()));
+        }
+    }
+
+    /**
+     * Delete user account
+     * 
+     * @param $id
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function deleteUserAccount()
+    {
+        try {
+            parent::validateLogin();
+
+            $password = request('password');
+            $user = User::getByAuthId();
+
+            if (!app('hash')->check($password, $user->password)) {
+                throw new \Exception(__('app.password_mismatch'));
+            }
+
+            AppModel::deleteEntity(auth()->id(), 'ENT_USER');
+
+            return response()->json(array('code' => 200, 'msg' => __('app.deleted_account_successfully')));
         } catch (\Exception $e) {
             return response()->json(array('code' => 500, 'msg' => $e->getMessage()));
         }
