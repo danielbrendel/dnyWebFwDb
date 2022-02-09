@@ -2218,6 +2218,22 @@ window.vue = new Vue({
     if (obj) {
       obj.classList.toggle('is-hidden');
     }
+  }), _defineProperty(_methods, "toggleOverlay", function toggleOverlay(ident) {
+    var obj = document.getElementById(ident);
+
+    if (obj) {
+      if (obj.style.display === 'block') {
+        obj.style.display = 'none';
+      } else {
+        obj.style.display = 'block';
+      }
+    }
+  }), _defineProperty(_methods, "markSeen", function markSeen() {
+    this.ajaxRequest('get', window.location.origin + '/notifications/seen', {}, function (response) {
+      if (response.code !== 200) {
+        console.log(response.msg);
+      }
+    });
   }), _defineProperty(_methods, "renderFrameworkItem", function renderFrameworkItem(elem) {
     var tags = '';
     elem.tags.forEach(function (tag, index) {
@@ -2264,6 +2280,24 @@ window.vue = new Vue({
     }
 
     var html = "\n                <div class=\"review\">\n                    <div class=\"review-header\">\n                        <div class=\"review-header-left\">\n                            <img src=\"" + window.location.origin + '/gfx/avatars/' + elem.userData.avatar + "\" width=\"64\" height=\"64\">\n                        </div>\n\n                        <div class=\"review-header-right\">\n                            <div class=\"review-header-right-username\"><a href=\"\">" + elem.userData.username + "</a></div>\n                            \n                            <div class=\"review-header-right-stars\">" + stars + "</div>\n                        </div>\n                    </div>\n\n                    <div class=\"review-content\">" + elem.content + "</div>\n\n                    <div class=\"review-footer\">\n                        " + options + "\n                    </div>\n                </div>\n            ";
+    return html;
+  }), _defineProperty(_methods, "renderNotification", function renderNotification(elem) {
+    var newItem = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+    var icon = 'fas fa-info-circle';
+    var color = 'is-notification-color-black';
+
+    if (elem.type === 'PUSH_WELCOME') {
+      icon = 'fas fa-gift';
+      color = 'is-notification-color-blue';
+    } else if (elem.type === 'PUSH_APPROVAL') {
+      icon = 'far fa-check-circle';
+      color = 'is-notification-color-green';
+    } else if (elem.type === 'PUSH_REVIEWED') {
+      icon = 'fas fa-star';
+      color = 'is-notification-color-yellow';
+    }
+
+    var html = "\n                <div class=\"notification-item " + (newItem ? 'is-new-notification' : '') + "\" id=\"notification-item-" + elem.id + "\">\n                    <div class=\"notification-icon\">\n                        <div class=\"notification-item-icon\"><i class=\"" + icon + " fa-3x " + color + "\"></i></div>\n                    </div>\n                    <div class=\"notification-info\">\n                        <div class=\"notification-item-message\">" + elem.longMsg + "</div>\n                        <div class=\"notification-item-message is-color-grey is-font-size-small is-margin-top-5\">" + elem.diffForHumans + "</div>\n                    </div>\n                </div>\n            ";
     return html;
   }), _defineProperty(_methods, "reportUser", function reportUser(id) {
     window.vue.ajaxRequest('get', window.location.origin + '/user/' + id + '/report', {}, function (response) {

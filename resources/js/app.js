@@ -168,6 +168,25 @@ window.vue = new Vue({
             }
         },
 
+        toggleOverlay: function(ident) {
+            let obj = document.getElementById(ident);
+            if (obj) {
+                if (obj.style.display === 'block') {
+                    obj.style.display = 'none';
+                } else {
+                    obj.style.display = 'block';
+                }
+            }
+        },
+
+        markSeen: function() {
+            this.ajaxRequest('get', window.location.origin + '/notifications/seen', {}, function(response) {
+                if (response.code !== 200) {
+                    console.log(response.msg);
+                }
+            });
+        },
+
         renderFrameworkItem: function(elem) {
             let tags = '';
 
@@ -256,6 +275,35 @@ window.vue = new Vue({
 
                     <div class="review-footer">
                         ` + options + `
+                    </div>
+                </div>
+            `;
+
+            return html;
+        },
+
+        renderNotification: function(elem, newItem = false) {
+            let icon = 'fas fa-info-circle';
+            let color = 'is-notification-color-black';
+            if (elem.type === 'PUSH_WELCOME') {
+                icon = 'fas fa-gift';
+                color = 'is-notification-color-blue';
+            } else if (elem.type === 'PUSH_APPROVAL') {
+                icon = 'far fa-check-circle';
+                color = 'is-notification-color-green';
+            } else if (elem.type === 'PUSH_REVIEWED') {
+                icon = 'fas fa-star';
+                color = 'is-notification-color-yellow';
+            }
+
+            let html = `
+                <div class="notification-item ` + ((newItem) ? 'is-new-notification' : '') + `" id="notification-item-` + elem.id + `">
+                    <div class="notification-icon">
+                        <div class="notification-item-icon"><i class="` + icon + ` fa-3x ` + color + `"></i></div>
+                    </div>
+                    <div class="notification-info">
+                        <div class="notification-item-message">` + elem.longMsg + `</div>
+                        <div class="notification-item-message is-color-grey is-font-size-small is-margin-top-5">` + elem.diffForHumans + `</div>
                     </div>
                 </div>
             `;

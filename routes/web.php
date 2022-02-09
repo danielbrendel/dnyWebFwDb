@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\MainController;
 use App\Http\Controllers\FrameworkController;
 use App\Http\Controllers\MemberController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\AdminController;
 
 /*
@@ -28,6 +29,7 @@ Route::get('/resend/{id}', [MainController::class, 'resend']);
 Route::post('/reset', [MainController::class, 'reset']);
 Route::post('/login', [MainController::class, 'login']);
 Route::any('/logout', [MainController::class, 'logout']);
+
 Route::get('/submit', [FrameworkController::class, 'viewSubmit']);
 Route::post('/submit', [FrameworkController::class, 'submit']);
 Route::post('/framework/query', [FrameworkController::class, 'query']);
@@ -40,12 +42,18 @@ Route::get('/framework/{id}/report', [FrameworkController::class, 'reportFramewo
 Route::get('/framework/{id}/delete', [FrameworkController::class, 'deleteFramework']);
 Route::get('/review/{id}/report', [FrameworkController::class, 'reportReview']);
 Route::get('/review/{id}/delete', [FrameworkController::class, 'deleteReview']);
+
 Route::get('/user/{ident}', [MemberController::class, 'showProfile']);
 Route::get('/user/{ident}/report', [MemberController::class, 'reportUser']);
 Route::get('/profile', [MemberController::class, 'profile']);
 Route::post('/profile/save', [MemberController::class, 'saveProfile']);
 Route::get('/member/name/valid', [MemberController::class, 'usernameValidity']);
 Route::any('/user/query/reviews', [MemberController::class, 'queryReviews']);
+
+Route::get('/notifications/list', [NotificationController::class, 'list']);
+Route::get('/notifications/fetch', [NotificationController::class, 'fetch']);
+Route::get('/notifications/seen', [NotificationController::class, 'seen']);
+
 Route::get('/admin', [AdminController::class, 'index']);
 Route::post('/admin/about/save', [AdminController::class, 'saveAboutContent']);
 Route::post('/admin/logo/save', [AdminController::class, 'saveLogo']);

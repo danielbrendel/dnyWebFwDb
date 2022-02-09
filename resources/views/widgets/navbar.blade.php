@@ -54,33 +54,39 @@
             @auth
             <div class="navbar-item">
                 <div>
-                    <i class="fas fa-upload fa-lg is-pointer" title="{{ __('app.submit_framework') }}" onclick="location.href='{{ url('/submit') }}';"></i>&nbsp;<span class="is-mobile-like-screen-width"><a class="is-color-grey" href="javascript:void(0);" onclick="location.href='{{ url('/submit') }}';">{{ __('app.submit_framework') }}</a></span>
+                    <i class="fas fa-upload fa-lg is-pointer is-color-nav-bright" title="{{ __('app.submit_framework') }}" onclick="location.href='{{ url('/submit') }}';"></i>&nbsp;<span class="is-mobile-like-screen-width"><a class="is-color-grey" href="javascript:void(0);" onclick="location.href='{{ url('/submit') }}';">{{ __('app.submit_framework') }}</a></span>
                 </div>
             </div>
 
             <div class="navbar-item">
                 <div>
-                    <i id="notification-indicator" class="far fa-heart fa-lg is-pointer" onclick="clearPushIndicator(this, document.getElementById('burger-notification')); toggleNotifications('notifications'); window.markSeen(); if (window.menuVisible) {document.getElementById('navbarMenu').classList.remove('is-active'); document.getElementById('navbarBurger').classList.remove('is-active'); }" title="{{ __('app.notifications') }}"></i>&nbsp;<span class="is-mobile-like-screen-width"><a class="is-color-grey" href="javascript:void(0);" onclick="clearPushIndicator(this, document.getElementById('burger-notification')); toggleNotifications('notifications'); if (window.menuVisible) {document.getElementById('navbarMenu').classList.remove('is-active'); document.getElementById('navbarBurger').classList.remove('is-active'); }">{{ __('app.notifications') }}</a></span>
+                    <i class="far fa-bell fa-lg is-pointer notification-badge" title="{{ __('app.notifications') }}" onclick="window.vue.toggleOverlay('notifications'); document.getElementById('navbar-notify-wrapper').classList.add('is-hidden'); document.getElementById('burger-notification').style.display = 'none'; window.vue.markSeen(); if (window.menuVisible) { document.getElementById('navbarMenu').classList.remove('is-active'); document.getElementById('navbarBurger').classList.remove('is-active'); }">
+                        <span class="notify-badge is-hidden" id="navbar-notify-wrapper"><span class="notify-badge-count" id="navbar-notify-count"></span></span>
+                    </i>
+                    
+                    <span class="is-mobile-like-screen-width">
+                        <a class="is-color-grey" href="javascript:void(0);" onclick="window.vue.toggleOverlay('notifications'); document.getElementById('navbar-notify-wrapper').classList.add('is-hidden'); document.getElementById('burger-notification').style.display = 'none'; window.vue.markSeen(); if (window.menuVisible) { document.getElementById('navbarMenu').classList.remove('is-active'); document.getElementById('navbarBurger').classList.remove('is-active'); }">{{ __('app.notifications') }}</a>
+                    </span>
                 </div>
             </div>
 
             <div class="navbar-item">
-                <div class="@if ((!isset($metro)) || ($metro === false)) is-top-5 @endif">
-                    <img class="avatar is-pointer" src="{{ asset('gfx/avatars/' . $user->avatar) }}" title="{{ __('app.profile') }}"  onclick="location.href='{{ url('/profile') }}';">&nbsp;<span class="is-mobile-like-screen-width"><a class="is-color-grey" href="javascript:void(0);" onclick="location.href='{{ url('/profile') }}';">{{ __('app.profile') }}</a></span>
+                <div class="is-mobile-like-left-5-n @if ((!isset($metro)) || ($metro === false)) is-top-5 @endif">
+                    <img class="avatar is-pointer" src="{{ asset('gfx/avatars/' . $user->avatar) }}" title="{{ __('app.profile') }}"  onclick="location.href='{{ url('/profile') }}';">&nbsp;<span class="is-mobile-like-screen-width is-mobile-like-top"><a class="is-color-grey" href="javascript:void(0);" onclick="location.href='{{ url('/profile') }}';">{{ __('app.profile') }}</a></span>
                 </div>
             </div>
 
             @if ($user->admin)
             <div class="navbar-item">
                 <div>
-                    <i class="fas fa-tools is-pointer" title="{{ __('app.admin_area') }}"  onclick="location.href='{{ url('/admin') }}';"></i>&nbsp;<span class="is-mobile-like-screen-width"><a class="is-color-grey" href="javascript:void(0);" onclick="location.href='{{ url('/admin') }}';">{{ __('app.admin_area') }}</a></span>
+                    <i class="fas fa-tools is-pointer is-color-nav-bright" title="{{ __('app.admin_area') }}"  onclick="location.href='{{ url('/admin') }}';"></i>&nbsp;<span class="is-mobile-like-screen-width"><a class="is-color-grey" href="javascript:void(0);" onclick="location.href='{{ url('/admin') }}';">{{ __('app.admin_area') }}</a></span>
                 </div>
             </div>
             @endif
 
             <div class="navbar-item">
                 <div>
-                    <i class="fas fa-sign-out-alt fa-lg is-pointer" title="{{ __('app.logout') }}"  onclick="location.href='{{ url('/logout') }}';"></i>&nbsp;<span class="is-mobile-like-screen-width"><a class="is-color-grey" href="javascript:void(0);" onclick="location.href='{{ url('/logout') }}';">{{ __('app.logout') }}</a></span>
+                    <i class="fas fa-sign-out-alt fa-lg is-pointer is-color-nav-bright" title="{{ __('app.logout') }}"  onclick="location.href='{{ url('/logout') }}';"></i>&nbsp;<span class="is-mobile-like-screen-width"><a class="is-color-grey" href="javascript:void(0);" onclick="location.href='{{ url('/logout') }}';">{{ __('app.logout') }}</a></span>
                 </div>
             </div>
             @endauth

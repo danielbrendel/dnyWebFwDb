@@ -9,6 +9,7 @@ use App\Models\ReportModel;
 use App\Models\CaptchaModel;
 use App\Models\ImageModel;
 use App\Models\TwitterModel;
+use App\Models\PushModel;
 use App\Models\User;
 
 /**
@@ -389,6 +390,8 @@ class AdminController extends Controller
 
             $item->approved = true;
             $item->save();
+
+            PushModel::addNotification(__('app.framework_item_approved_short'), __('app.framework_item_approved_long', ['name' => $item->name, 'url' => url('/view/' . $item->slug)]), 'PUSH_APPROVAL', $item->userId);
 
             if (env('TWITTERBOT_ENABLE', false)) {
                 TwitterModel::postToTwitter($item);

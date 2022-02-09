@@ -56,9 +56,26 @@ body {
     color: rgb(150, 150, 150);
 }
 
+.is-color-nav-bright {
+    color: rgb(200, 200, 200);
+}
+
 .is-top-5 {
     position: relative;
     top: 5px;
+}
+
+.is-mobile-like-top {
+    @media screen and (max-width: 1087px) {
+        position: relative;
+        top: -8px;
+    }
+}
+
+.is-mobile-like-left-5-n {
+    @media screen and (max-width: 1087px) {
+        left: -5px;
+    }
 }
 
 .is-wrap {
@@ -518,4 +535,148 @@ body {
 .edit-profile a:hover {
     color: rgb(100, 100, 100);
     text-decoration: underline;
+}
+
+.app-overlay {
+    position: absolute;
+    top: 31px;
+    @media screen and (min-width: 769px) {
+        right: 0px;
+        width: 550px;
+        height: 90%;
+    }
+    @media screen and (max-width: 768px) {
+        width: 100%;
+        height: 100%;
+    }
+    @media screen and (min-height: 520px) {
+        height: 570px;
+    }
+    @media screen and (max-width: 572px) {
+        top: 52px;
+        right: 0px;
+    }
+    @media screen and (max-width: 353px) {
+        right: 0px;
+    }
+    z-index: 4;
+    background-color: rgb(255, 255, 255);
+    display: none;
+    border: 1px solid #ccc;
+}
+.overlay-arrow-up {
+    top: -15px;
+    width: 0;
+    height: 0;
+    border-left: 15px solid transparent;
+    border-right: 15px solid transparent;
+    border-bottom: 15px solid rgb(255, 255, 255);
+    @media screen and (max-width: 768px) {
+        display: none;
+    }
+}
+.overlay-close-action {
+    margin-top: 22px;
+    margin-right: 32px;
+}
+.overlay-content {
+    margin: 25px;
+    height: 78%;
+    @media screen and (max-width: 480px) {
+        height: 95%;
+    }
+    overflow-y: auto;
+}
+.notification-item {
+    position: relative;
+    width: 100%;
+    height: auto;
+    background-color: rgb(255, 255, 255);
+    padding: 21px;
+    border-radius: 4px;
+}
+.notification-item:hover {
+    background-color: rgb(250, 250, 250);
+}
+.notification-item-icon {
+    display: inline-block;
+}
+.notification-icon {
+    display: inline-block;
+    top: -12%;
+    vertical-align: top;
+}
+.notification-info {
+    display: inline-block;
+    margin-left: 15px;
+    width: 83%;
+    @media screen and (max-width: 576px) {
+        width: 69%;
+    }
+}
+.notification-item-message a {
+    color: rgb(100, 100, 100);
+    font-weight: bold;
+}
+.notification-item-message a:hover {
+    text-decoration: underline;
+}
+.is-new-notification {
+    background-color: rgb(128, 255, 128);
+}
+.is-new-notification:hover {
+    background-color: rgb(128, 200, 128);
+}
+.notification-badge {
+    color: rgb(255, 255, 255);
+    text-decoration: none;
+    position: relative;
+    display: inline-block;
+    border-radius: 2px;
+}
+.notification-badge .notify-badge {
+    position: absolute;
+    right: -20px;
+    top: -12px;
+    padding: 2px 5px;
+    border-radius: 50%;
+    background: rgb(255, 0, 0);
+    color: rgb(255, 255, 255);
+}
+.notify-badge .notify-badge-count {
+    position: relative;
+    top: -2px;
+}
+.notify-badge-count {
+    font-size: 0.8em;
+}
+#burger-notification {
+    position: absolute;
+    background-color: rgb(255, 0, 0) !important;
+    border: 1px solid rgb(255, 0, 0);
+    border-radius: 50%;
+    width: 6px;
+    height: 6px;
+    z-index: 4;
+    top: 17px;
+    left: 30px;
+    display: none;
+}
+.is-notification-color-red {
+    color: rgb(210, 0, 0);
+}
+.is-notification-color-green {
+    color: rgb(50, 202, 50);
+}
+.is-notification-color-blue {
+    color:rgb(55, 120, 180);
+}
+.is-notification-color-orange {
+    color: rgb(255, 117, 117);
+}
+.is-notification-color-yellow {
+    color: rgb(255, 215, 0);
+}
+.is-notification-color-black {
+    color: rgb(50, 50, 48);
 }
