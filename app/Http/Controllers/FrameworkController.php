@@ -108,9 +108,26 @@ class FrameworkController extends Controller
                 $item->userData->avatar = $user->avatar;
             }
 
+            if (!\Auth::guest()) {
+                $user_review = ReviewModel::where('frameworkId', '=', $frameworkId)->where('userId', '=', auth()->id())->first();
+                
+                if ($user_review !== null) {
+                    $authUser = User::getByAuthId();
+
+                    $user_review->userData = new \stdClass();
+                    $user_review->userData->id = $authUser->id;
+                    $user_review->userData->username = $authUser->username;
+                    $user_review->userData->avatar = $authUser->avatar;
+
+                    $user_review = $user_review->toArray();
+                }
+            } else {
+                $user_review = null;
+            }
+
             $review_count = ReviewModel::getReviewCount($frameworkId);
 
-            return response()->json(array('code' => 200, 'data' => $data->toArray(), 'count' => $review_count));
+            return response()->json(array('code' => 200, 'data' => $data->toArray(), 'user_review' => $user_review, 'count' => $review_count));
         } catch (\Exception $e) {
             return response()->json(array('code' => 500, 'msg' => $e->getMessage()));
         }
@@ -157,6 +174,7 @@ class FrameworkController extends Controller
             $item->tags = explode(' ', $item->tags);
             $item->avg_stars = ReviewModel::getAverageStars($item->id);
             $item->review_count = ReviewModel::getReviewCount($item->id);
+            $item->user_review = ReviewModel::where('frameworkId', '=', $item->id)->where('userId', '=', auth()->id())->first();
             
             $others = FrameworkModel::queryRandom($item->id, $item->langId, env('APP_QUERYRANDOMCOUNT'));
             foreach ($others as &$other) {
@@ -317,6 +335,35 @@ class FrameworkController extends Controller
     }
 
     /**
+     * Create a review for a framework item
+     * 
+     * @param $id
+     * @return mixed
+     */
+    public function createReview($id)
+    {
+        try {
+            parent::validateLogin();
+
+            $attr = request()->validate([
+                'content' => 'required',
+                'rating' => 'required|numeric|min:1|max:5'
+            ]);
+
+            $already = ReviewModel::where('frameworkId', '=', $id)->where('userId', '=', auth()->id())->count();
+            if ($already > 0) {
+                throw new \Exception('You have already reviewed this product. Please delete your old review before reviewing again.');
+            }
+
+            ReviewModel::addReview(auth()->id(), $id, $attr['content'], $attr['rating']);
+
+            return back()->with('flash.success', __('app.review_stored'));
+        } catch (\Exception $e) {
+            return back()->with('flash.error', $e->getMessage());
+        }
+    }
+
+    /**
      * Report a framework item
      * 
      * @param $id
@@ -397,7 +444,7 @@ class FrameworkController extends Controller
 
             $user = User::getByAuthId();
 
-            $item = ReviewModel::where('id', '=', $id)->first();
+            $item = FrameworkModel::where('id', '=', $id)->first();
             if ($item->locked) {
                 throw new \Exception('Item is locked');
             }

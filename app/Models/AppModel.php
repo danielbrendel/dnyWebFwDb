@@ -51,12 +51,12 @@ class AppModel extends Model
     }
 
     /**
-     * Get cookie consent text
+     * Get cookie consent content
      * 
      * @return string
      * @throws \Exception
      */
-    public static function getCookieConsentText()
+    public static function getCookieConsent()
     {
         try {
             return static::getAppSettings()->cookie_consent;

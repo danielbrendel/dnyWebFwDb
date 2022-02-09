@@ -162,6 +162,28 @@ window.vue = new Vue({
             setTimeout(function() { document.getElementById('flash-success').style.display = 'none'; }, 3500);
         },
 
+        handleCookieConsent: function () {
+            let cookies = document.cookie.split(';');
+            let foundCookie = false;
+            for (let i = 0; i < cookies.length; i++) {
+                if (cookies[i].indexOf('cookieconsent') !== -1) {
+                    foundCookie = true;
+                    break;
+                }
+            }
+
+            if (foundCookie === false) {
+                document.getElementById('cookie-consent').style.display = 'inline-block';
+            }
+        },
+
+        clickedCookieConsentButton: function () {
+            let expDate = new Date(Date.now() + 1000 * 60 * 60 * 24 * 365);
+            document.cookie = 'cookieconsent=1; expires=' + expDate.toUTCString() + ';';
+
+            document.getElementById('cookie-consent').style.display = 'none';
+        },
+
         toggleDropdown: function(obj) {
             if (obj) {
                 obj.classList.toggle('is-hidden');
@@ -348,5 +370,19 @@ window.vue = new Vue({
                 alert(response.msg);
             });
         },
+
+        setRating: function(value) {
+            for (let i = 0; i < 5; i++) {
+                document.getElementById('review_rating_star_' + (i + 1).toString()).classList.add('far');
+                document.getElementById('review_rating_star_' + (i + 1).toString()).classList.remove('fas');
+            }
+
+            for (let i = 0; i < value; i++) {
+                document.getElementById('review_rating_star_' + (i + 1).toString()).classList.remove('far');
+                document.getElementById('review_rating_star_' + (i + 1).toString()).classList.add('fas');
+            }
+
+            document.getElementById('rating').value = value;
+        }
     }
 });

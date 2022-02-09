@@ -815,3 +815,44 @@ body {
 .is-notification-color-black {
   color: #323230;
 }
+
+.reviews-write {
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.reviews-write-title {
+  margin-top: 10px;
+  margin-bottom: 5px;
+  font-size: 1.5em;
+}
+
+.cookie-consent {
+  position: relative;
+  display: none;
+  width: 100%;
+  background-color: #3c3c3a;
+  color: #b4b4b4;
+  font-size: 0.8em;
+  z-index: 5;
+}
+
+.cookie-consent-inner {
+  position: relative;
+  display: inline-block;
+  width: auto;
+  text-align: center;
+  padding: 24px;
+}
+
+.cookie-consent-button {
+  position: relative;
+  display: inline-block;
+  float: right;
+  margin-right: 25px;
+  padding: 24px;
+}
+
+.cookie-consent-button a:hover {
+  color: #969696;
+}

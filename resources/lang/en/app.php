@@ -51,6 +51,12 @@ return [
     'password_confirmation' => 'Confirm password',
     'subscribe_newsletter' => 'I want to receive newsletters',
     'save' => 'Save',
+    'write_review' => 'Write review',
+    'review_content_placeholder' => 'Write something about this product',
+    'submit_review' => 'Submit review',
+    'review_stored' => 'Review has been stored',
+    'already_reviewed' => 'You have already reviewed this product. In order to create a new review, you have to delete your old one.',
+    'removal_successful' => 'Removal successful',
     'profile_saved' => 'Profile has been saved',
     'edit_framework_item' => 'Edit framework item',
     'select_logo' => 'Select logo',
@@ -101,6 +107,7 @@ return [
     'table_row_info' => '',
     'table_pagination_prev' => 'Previous',
     'table_pagination_next' => 'Next',
+    'report_successful' => 'Reported successfully',
     'report_id' => 'ID',
     'report_entity' => 'Entity',
     'report_type' => 'Type',
@@ -113,5 +120,6 @@ return [
     'report_confirm_delete' => 'Do you really want to delete this entity?',
     'report_confirm_safe' => 'Do you want to set this entity safe?',
     'framework_approved' => 'Framework has been approved',
-    'data_saved' => 'Data has been saved'
+    'data_saved' => 'Data has been saved',
+    'cookie_consent_close' => 'Okay.'
 ];

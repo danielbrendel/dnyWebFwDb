@@ -36,6 +36,16 @@
         <main id="main">
             @include('widgets.navbar')
 
+            <div id="cookie-consent" class="cookie-consent has-text-centered is-top-53">
+                <div class="cookie-consent-inner">
+                    {!! \App\Models\AppModel::getCookieConsent() !!}
+                </div>
+
+                <div class="cookie-consent-button">
+                    <a class="is-color-grey" href="javascript:void(0)" onclick="window.vue.clickedCookieConsentButton()">{{ __('app.cookie_consent_close') }}</a>
+                </div>
+            </div>
+
             <div class="content">
                 @if ($errors->any())
                     <div id="error-message-1" class="is-z-index-3">
@@ -237,6 +247,8 @@
                     setTimeout('fetchNotifications()', 100);
                     setTimeout('fetchNotificationList()', 200);
                 @endauth
+
+                window.vue.handleCookieConsent();
             });
         </script>
         @yield('javascript')

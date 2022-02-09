@@ -40,6 +40,7 @@ Route::get('/framework/{id}/edit', [FrameworkController::class, 'viewEdit']);
 Route::post('/framework/{id}/edit', [FrameworkController::class, 'edit']);
 Route::get('/framework/{id}/report', [FrameworkController::class, 'reportFramework']);
 Route::get('/framework/{id}/delete', [FrameworkController::class, 'deleteFramework']);
+Route::post('/framework/{id}/review/send', [FrameworkController::class, 'createReview']);
 Route::get('/review/{id}/report', [FrameworkController::class, 'reportReview']);
 Route::get('/review/{id}/delete', [FrameworkController::class, 'deleteReview']);
 

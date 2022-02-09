@@ -680,3 +680,40 @@ body {
 .is-notification-color-black {
     color: rgb(50, 50, 48);
 }
+
+.reviews-write {
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+.reviews-write-title {
+    margin-top: 10px;
+    margin-bottom: 5px;
+    font-size: 1.5em;
+}
+
+.cookie-consent {
+    position: relative;
+    display: none;
+    width: 100%;
+    background-color: rgb(60, 60, 58);
+    color: rgb(180, 180, 180);
+    font-size: 0.8em;
+    z-index: 5;
+}
+.cookie-consent-inner {
+    position: relative;
+    display: inline-block;
+    width: auto;
+    text-align: center;
+    padding: 24px;
+}
+.cookie-consent-button {
+    position: relative;
+    display: inline-block;
+    float: right;
+    margin-right: 25px;
+    padding: 24px;
+}
+.cookie-consent-button a:hover {
+    color: rgb(150, 150, 150);
+}

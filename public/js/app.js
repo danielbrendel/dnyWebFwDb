@@ -2214,6 +2214,24 @@ window.vue = new Vue({
     setTimeout(function () {
       document.getElementById('flash-success').style.display = 'none';
     }, 3500);
+  }), _defineProperty(_methods, "handleCookieConsent", function handleCookieConsent() {
+    var cookies = document.cookie.split(';');
+    var foundCookie = false;
+
+    for (var i = 0; i < cookies.length; i++) {
+      if (cookies[i].indexOf('cookieconsent') !== -1) {
+        foundCookie = true;
+        break;
+      }
+    }
+
+    if (foundCookie === false) {
+      document.getElementById('cookie-consent').style.display = 'inline-block';
+    }
+  }), _defineProperty(_methods, "clickedCookieConsentButton", function clickedCookieConsentButton() {
+    var expDate = new Date(Date.now() + 1000 * 60 * 60 * 24 * 365);
+    document.cookie = 'cookieconsent=1; expires=' + expDate.toUTCString() + ';';
+    document.getElementById('cookie-consent').style.display = 'none';
   }), _defineProperty(_methods, "toggleDropdown", function toggleDropdown(obj) {
     if (obj) {
       obj.classList.toggle('is-hidden');
@@ -2327,6 +2345,18 @@ window.vue = new Vue({
     window.vue.ajaxRequest('get', window.location.origin + '/review/' + id + '/delete', {}, function (response) {
       alert(response.msg);
     });
+  }), _defineProperty(_methods, "setRating", function setRating(value) {
+    for (var i = 0; i < 5; i++) {
+      document.getElementById('review_rating_star_' + (i + 1).toString()).classList.add('far');
+      document.getElementById('review_rating_star_' + (i + 1).toString()).classList.remove('fas');
+    }
+
+    for (var _i = 0; _i < value; _i++) {
+      document.getElementById('review_rating_star_' + (_i + 1).toString()).classList.remove('far');
+      document.getElementById('review_rating_star_' + (_i + 1).toString()).classList.add('fas');
+    }
+
+    document.getElementById('rating').value = value;
   }), _methods)
 });
 
