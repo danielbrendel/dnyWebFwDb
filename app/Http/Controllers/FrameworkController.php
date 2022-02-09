@@ -310,7 +310,7 @@ class FrameworkController extends Controller
 
             FrameworkModel::editFramework($id, $attr);
 
-            return redirect('/')->with('success', __('app.framework_saved_successfully'));
+            return redirect('/view/' . $framework->slug)->with('success', __('app.framework_saved_successfully'));
         } catch (\Exception $e) {
             return back()->with('error', $e->getMessage());
         }
