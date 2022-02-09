@@ -1,22 +1,22 @@
 <?php
 
+/*
+    WebframeworkDB (dnyWebFwDb) developed by Daniel Brendel
+
+    (C) 2022 by Daniel Brendel
+
+    Contact: dbrendel1988<at>gmail<dot>com
+    GitHub: https://github.com/danielbrendel/
+
+    Released under the MIT license
+*/
+
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\MainController;
 use App\Http\Controllers\FrameworkController;
 use App\Http\Controllers\MemberController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\AdminController;
-
-/*
-|--------------------------------------------------------------------------
-| Web Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register web routes for your application. These
-| routes are loaded by the RouteServiceProvider within a group which
-| contains the "web" middleware group. Now create something great!
-|
-*/
 
 Route::get('/', [MainController::class, 'index']);
 Route::get('/imprint', [MainController::class, 'imprint']);

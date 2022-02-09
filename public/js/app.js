@@ -2064,6 +2064,16 @@ var _methods;
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
+/*
+    WebframeworkDB (dnyWebFwDb) developed by Daniel Brendel
+
+    (C) 2022 by Daniel Brendel
+
+    Contact: dbrendel1988<at>gmail<dot>com
+    GitHub: https://github.com/danielbrendel/
+
+    Released under the MIT license
+*/
 __webpack_require__(/*! ./bootstrap */ "./resources/js/bootstrap.js");
 
 window.vue = new Vue({

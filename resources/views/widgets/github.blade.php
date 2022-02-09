@@ -1,3 +1,14 @@
+{{--
+    WebframeworkDB (dnyWebFwDb) developed by Daniel Brendel
+
+    (C) 2022 by Daniel Brendel
+
+    Contact: dbrendel1988<at>gmail<dot>com
+    GitHub: https://github.com/danielbrendel/
+
+    Released under the MIT license
+--}}
+
 <div class="github">
     <div class="github-title">
         <a href="{{ $github->html_url }}" class="has-text-weight-bold">{{ $github->full_name }}</a>&nbsp;&nbsp;<i class="fas fa-star"></i>&nbsp;{{ $github->stargazers_count }}

@@ -1,5 +1,16 @@
 <?php
 
+/*
+    WebframeworkDB (dnyWebFwDb) developed by Daniel Brendel
+
+    (C) 2022 by Daniel Brendel
+
+    Contact: dbrendel1988<at>gmail<dot>com
+    GitHub: https://github.com/danielbrendel/
+
+    Released under the MIT license
+*/
+
 return [
     'select_language' => 'Language',
     'select_sorting' => 'Sorting',
@@ -156,6 +167,7 @@ return [
     'framework_approved' => 'Framework has been approved',
     'data_saved' => 'Data has been saved',
     'cookie_consent_close' => 'Okay.',
+    'mail_footer' => 'Kind regards',
     'newsletter' => 'Newsletter',
     'subject' => 'Subject',
     'content' => 'Content',

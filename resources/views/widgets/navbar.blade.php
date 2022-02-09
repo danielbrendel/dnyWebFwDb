@@ -1,3 +1,14 @@
+{{--
+    WebframeworkDB (dnyWebFwDb) developed by Daniel Brendel
+
+    (C) 2022 by Daniel Brendel
+
+    Contact: dbrendel1988<at>gmail<dot>com
+    GitHub: https://github.com/danielbrendel/
+
+    Released under the MIT license
+--}}
+
 <nav class="navbar has-border-bottom is-dark" role="navigation" aria-label="main navigation">
     <div class="navbar-brand">
         <a class="navbar-item is-title-font" href="{{ url('/') }}">{{ env('APP_NAME') }}</a>

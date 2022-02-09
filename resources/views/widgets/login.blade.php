@@ -1,3 +1,14 @@
+{{--
+    WebframeworkDB (dnyWebFwDb) developed by Daniel Brendel
+
+    (C) 2022 by Daniel Brendel
+
+    Contact: dbrendel1988<at>gmail<dot>com
+    GitHub: https://github.com/danielbrendel/
+
+    Released under the MIT license
+--}}
+
 <div class="modal" :class="{'is-active': bShowRegister}">
     <div class="modal-background"></div>
     <div class="modal-card">
