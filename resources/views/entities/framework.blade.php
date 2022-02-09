@@ -28,7 +28,9 @@
                         <div class="framework-item-full-about-hint">{{ $framework->summary }}</div>
                         <div class="framework-item-full-about-tags">
                             @foreach ($framework->tags as $tag)
-                                <span><a href="">#{{ $tag }}</a>&nbsp;</span>
+                                @if (strlen($tag) > 0)
+                                    <span><a href="{{ url('/') }}?tag={{ $tag }}">#{{ $tag }}</a>&nbsp;</span>
+                                @endif
                             @endforeach
                         </div>
                     </div>
@@ -117,7 +119,9 @@
 
                                 <div class="framework-item-about-tags">
                                     @foreach ($item->tags as $tag)
-                                        <span><a href="">#{{ $tag }}</a>&nbsp;</span>
+                                        @if (strlen($tag) > 0)
+                                            <span><a href="{{ url('/') }}?tag={{ $tag }}">#{{ $tag }}</a>&nbsp;</span>
+                                        @endif
                                     @endforeach
                                 </div>
                             </div>
@@ -206,7 +210,7 @@
                     }
 
                     if (response.data.length === 0) {
-                        content.innerHTML += '<div><br/>{{ __('app.no_more_items') }}</div>';
+                        content.innerHTML += '<div><br/><center>{{ __('app.no_more_items') }}</center></div>';
                     } else {
                         content.innerHTML += '<div id="loadmore"><center><br/><i class="fas fa-plus is-pointer" onclick="window.queryReviews();"></i></center></div>';
                     }

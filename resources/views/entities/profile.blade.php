@@ -195,7 +195,7 @@
                     }
 
                     if (response.data.length === 0) {
-                        content.innerHTML += '<div><br/>{{ __('app.no_more_items') }}</div>';
+                        content.innerHTML += '<div><br/><center>{{ __('app.no_more_items') }}</center></div>';
                     } else {
                         content.innerHTML += '<div id="loadmore"><center><br/><i class="fas fa-plus is-pointer" onclick="window.queryUserFrameworks();"></i></center></div>';
                     }
@@ -237,7 +237,7 @@
                     }
 
                     if (response.data.length === 0) {
-                        content.innerHTML += '<div><br/>{{ __('app.no_more_items') }}</div>';
+                        content.innerHTML += '<div><br/><center>{{ __('app.no_more_items') }}</center></div>';
                     } else {
                         content.innerHTML += '<div id="loadmore2"><center><br/><i class="fas fa-plus is-pointer" onclick="window.queryUserReviews();"></i></center></div>';
                     }
