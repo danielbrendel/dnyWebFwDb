@@ -49,7 +49,7 @@ class TwitterModel extends Model
                 $status .= ' @' . $framework->twitter;
             }
 
-            $status .= ' ' . env('TWITTERBOT_TAGS');
+            $status .= ' ' . url('/view/' . $framework->slug) . ' ' . env('TWITTERBOT_TAGS');
 
             $parameters = [
                 'status' => $status,
