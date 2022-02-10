@@ -888,3 +888,7 @@ body {
   color: #787878;
   text-decoration: underline;
 }
+
+.avatar {
+  border-radius: 50%;
+}
