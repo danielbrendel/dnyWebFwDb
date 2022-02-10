@@ -28,6 +28,7 @@
                             <div class="control">
                                 <input class="input" type="file" name="logo" data-role="file" data-button-title="{{ __('app.select_logo') }}">
                             </div>
+                            <p class="help">{{ __('app.framework_logo_hint') }}</p>
                         </div>
 
                         <div class="field">

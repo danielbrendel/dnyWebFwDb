@@ -88,6 +88,7 @@
                                             <div class="control">
                                                 <input type="file" class="input" name="avatar" data-role="file" data-button-title="{{ __('app.select_avatar') }}">
                                             </div>
+                                            <p class="help">{{ __('app.profile_avatar_hint') }}</p>
                                         </div>
 
                                         <div class="field">
