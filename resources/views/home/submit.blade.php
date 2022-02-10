@@ -68,7 +68,7 @@
                         <div class="field">
                             <label class="label">{{ __('app.framework_description') }}</label>
                             <div class="control">
-                                <textarea name="description" placeholder="{{ __('app.framework_summary_placeholder') }}">{{ old('description') }}</textarea>
+                                <textarea name="description" placeholder="{{ __('app.framework_description_placeholder') }}">{{ old('description') }}</textarea>
                             </div>
                         </div>
 
