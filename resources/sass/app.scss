@@ -199,6 +199,9 @@ body {
     background-size: cover;
     border-top-left-radius: 25px;
     border-top-right-radius: 25px;
+    @media screen and (max-width: 768px) {
+        display: none;
+    }
 }
 .framework-item-about {
     margin-left: 20px;

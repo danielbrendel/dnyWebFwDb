@@ -228,6 +228,11 @@ body {
   border-top-left-radius: 25px;
   border-top-right-radius: 25px;
 }
+@media screen and (max-width: 768px) {
+  .framework-item-image {
+    display: none;
+  }
+}
 
 .framework-item-about {
   margin-left: 20px;
