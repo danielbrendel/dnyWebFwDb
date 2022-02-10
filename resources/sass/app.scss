@@ -319,6 +319,13 @@ body {
     margin-right: 20px;
     margin-bottom: 20px;
 }
+.framework-item-full-links a {
+    color: rgb(100, 100, 100);
+}
+.framework-item-full-links a:hover {
+    color: rgb(100, 100, 100);
+    text-decoration: underline;
+}
 .framework-item-full-stats {
     margin-left: 20px;
     margin-right: 20px;
