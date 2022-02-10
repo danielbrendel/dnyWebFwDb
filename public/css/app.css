@@ -24,6 +24,12 @@ body {
   height: auto;
 }
 
+@media screen and (max-width: 1087px) {
+  .columns {
+    width: 100%;
+  }
+}
+
 .is-title-font {
   font-family: Quicksand, Verdana, Geneva, Tahoma, sans-serif;
   font-size: 1.5em;
@@ -210,7 +216,7 @@ body {
 }
 @media screen and (max-width: 546px) {
   .framework-item {
-    width: 95%;
+    width: 100%;
   }
 }
 
@@ -300,11 +306,6 @@ body {
   margin-left: 10px;
   margin-right: 10px;
   width: 100%;
-}
-@media screen and (max-width: 768px) {
-  .framework-item-full {
-    width: 95%;
-  }
 }
 
 .framework-item-full-image {
@@ -442,6 +443,11 @@ body {
   border: 1px solid #ccc;
   border-radius: 25px;
   width: 500px;
+}
+@media screen and (max-width: 546px) {
+  .github {
+    width: 91%;
+  }
 }
 
 .github-title {

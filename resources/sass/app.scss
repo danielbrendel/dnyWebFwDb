@@ -26,6 +26,12 @@ body {
     height: auto;
 }
 
+.columns {
+    @media screen and (max-width: 1087px) {
+        width: 100%;
+    }
+}
+
 .is-title-font {
     font-family: Quicksand, Verdana, Geneva, Tahoma, sans-serif;
     font-size: 1.5em;
@@ -183,7 +189,7 @@ body {
     margin-right: 10px;
     width: 530px;
     @media screen and (max-width: 546px) {
-        width: 95%;
+        width: 100%;
     }
 }
 .framework-item-image {
@@ -260,9 +266,6 @@ body {
     margin-left: 10px;
     margin-right: 10px;
     width: 100%;
-    @media screen and (max-width: 768px) {
-        width: 95%;
-    }
 }
 .framework-item-full-image {
     width: 100%;
@@ -377,6 +380,9 @@ body {
     border: 1px solid #ccc;
     border-radius: 25px;
     width: 500px;
+    @media screen and (max-width: 546px) {
+        width: 91%;
+    }
 }
 .github-title {
     color: rgb(67, 91, 115);
