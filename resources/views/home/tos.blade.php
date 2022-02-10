@@ -18,7 +18,7 @@
 
             <div class="column is-8">
                 <div class="page-content">
-                    {{ $tos }}
+                    {!! $tos !!}
                 </div>
             </div>
 
