@@ -26,14 +26,14 @@
                         <div class="field">
                             <label class="label">{{ __('app.framework_name') }}</label>
                             <div class="control">
-                                <input class="input" type="text" name="name" placeholder="{{ __('app.framework_name_placeholder') }}" value="{{ old('name') }}">
+                                <input class="input" type="text" name="name" placeholder="{{ __('app.framework_name_placeholder') }}" value="{{ old('name') }}" required>
                             </div>
                         </div>
 
                         <div class="field">
                             <label class="label">{{ __('app.framework_logo') }}</label>
                             <div class="control">
-                                <input class="input" type="file" name="logo" data-role="file" data-button-title="{{ __('app.select_logo') }}">
+                                <input class="input" type="file" name="logo" data-role="file" data-button-title="{{ __('app.select_logo') }}" required>
                             </div>
                             <p class="help">{{ __('app.framework_logo_hint') }}</p>
                         </div>
@@ -41,8 +41,8 @@
                         <div class="field">
                             <label class="label">{{ __('app.framework_language') }}</label>
                             <div class="control">
-                                <select class="input" name="lang">
-                                    <option value="0" selected>{{ __('app.framework_select_language') }}</option>
+                                <select class="input" name="lang" required>
+                                    <option value="" selected>{{ __('app.framework_select_language') }}</option>
 
                                     @foreach (\App\Models\LanguageModel::getLanguages() as $item)
                                         <option value="{{ $item->id }}">{{ $item->language }}</option>
@@ -54,21 +54,21 @@
                         <div class="field">
                             <label class="label">{{ __('app.framework_input_creator') }}</label>
                             <div class="control">
-                                <input class="input" type="text" name="creator" placeholder="{{ __('app.framework_creator_placeholder') }}" value="{{ old('creator') }}">
+                                <input class="input" type="text" name="creator" placeholder="{{ __('app.framework_creator_placeholder') }}" value="{{ old('creator') }}" required>
                             </div>
                         </div>
 
                         <div class="field">
                             <label class="label">{{ __('app.framework_summary') }}</label>
                             <div class="control">
-                                <input class="input" type="text" name="summary" placeholder="{{ __('app.framework_summary_placeholder') }}" value="{{ old('summary') }}">
+                                <input class="input" type="text" name="summary" placeholder="{{ __('app.framework_summary_placeholder') }}" value="{{ old('summary') }}" required>
                             </div>
                         </div>
 
                         <div class="field">
                             <label class="label">{{ __('app.framework_description') }}</label>
                             <div class="control">
-                                <textarea name="description" placeholder="{{ __('app.framework_description_placeholder') }}">{{ old('description') }}</textarea>
+                                <textarea name="description" placeholder="{{ __('app.framework_description_placeholder') }}" required>{{ old('description') }}</textarea>
                             </div>
                         </div>
 
@@ -82,7 +82,7 @@
                         <div class="field">
                             <label class="label">{{ __('app.framework_github') }}</label>
                             <div class="control">
-                                <input class="input" type="text" name="github" placeholder="{{ __('app.framework_github_placeholder') }}" value="{{ old('github') }}">
+                                <input class="input" type="text" name="github" placeholder="{{ __('app.framework_github_placeholder') }}" value="{{ old('github') }}" required>
                             </div>
                         </div>
 

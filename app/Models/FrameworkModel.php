@@ -74,7 +74,7 @@ class FrameworkModel extends Model
             $image = request()->file('logo');
             if ($image !== null) {
                 if ($image->getSize() > env('APP_MAXUPLOADSIZE')) {
-                    throw new \Exception(__('app.post_upload_size_exceeded'));
+                    throw new \Exception(__('app.upload_size_exceeded'));
                 }
 
                 $fname = uniqid('', true) . md5(random_bytes(55));

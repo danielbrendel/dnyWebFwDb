@@ -2286,6 +2286,7 @@ window.vue = new Vue({
     return html;
   }), _defineProperty(_methods, "renderReview", function renderReview(elem, user) {
     var isAdmin = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
+    var renderItemInfo = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : false;
     var stars = '';
 
     for (var i = 0; i < elem.stars; i++) {
@@ -2308,7 +2309,13 @@ window.vue = new Vue({
       options += '<div class="review-footer-option"><a href="javascript:void(0);" onclick="window.vue.deleteReview(' + elem.id + ');">Delete</a>&nbsp;</div>';
     }
 
-    var html = "\n                <div class=\"review\">\n                    <div class=\"review-header\">\n                        <div class=\"review-header-left\">\n                            <img src=\"" + window.location.origin + '/gfx/avatars/' + elem.userData.avatar + "\" width=\"64\" height=\"64\">\n                        </div>\n\n                        <div class=\"review-header-right\">\n                            <div class=\"review-header-right-username\"><a href=\"\">" + elem.userData.username + "</a></div>\n                            \n                            <div class=\"review-header-right-stars\">" + stars + "</div>\n                        </div>\n                    </div>\n\n                    <div class=\"review-content is-wrap\">" + elem.content + "</div>\n\n                    <div class=\"review-footer\">\n                        " + options + "\n                    </div>\n                </div>\n            ";
+    var itemInfo = '';
+
+    if (renderItemInfo) {
+      itemInfo = '<div class="review-iteminfo"><a href="' + window.location.origin + '/view/' + elem.framework.slug + '">' + elem.framework.name + '</a></div>';
+    }
+
+    var html = "\n                <div class=\"review\">\n                    <div class=\"review-header\">\n                        <div class=\"review-header-left\">\n                            <img src=\"" + window.location.origin + '/gfx/avatars/' + elem.userData.avatar + "\" width=\"64\" height=\"64\">\n                        </div>\n\n                        <div class=\"review-header-right\">\n                            <div class=\"review-header-right-username\"><a href=\"" + window.location.origin + '/user/' + elem.userData.username + "\">" + elem.userData.username + "</a></div>\n                            \n                            <div class=\"review-header-right-stars\">" + stars + "</div>\n                        </div>\n                    </div>\n\n                    " + itemInfo + "\n\n                    <div class=\"review-content is-wrap\">" + elem.content + "</div>\n\n                    <div class=\"review-footer\">\n                        " + options + "\n                    </div>\n                </div>\n            ";
     return html;
   }), _defineProperty(_methods, "renderNotification", function renderNotification(elem) {
     var newItem = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;

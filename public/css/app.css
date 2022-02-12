@@ -540,6 +540,15 @@ body {
   text-decoration: underline;
 }
 
+.review-iteminfo a {
+  color: #3778b4;
+}
+
+.review-iteminfo a:hover {
+  color: #3778b4;
+  text-decoration: underline;
+}
+
 .review-content {
   margin-top: 20px;
   margin-bottom: 20px;

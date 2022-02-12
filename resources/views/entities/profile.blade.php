@@ -246,7 +246,7 @@
             function(response) {
                 if (response.code == 200) {
                     response.data.forEach(function(elem, index) {
-                        let html = window.vue.renderReview(elem, window.userId, window.isAdmin);
+                        let html = window.vue.renderReview(elem, window.userId, window.isAdmin, true);
 
                         content.innerHTML += html;
                     });

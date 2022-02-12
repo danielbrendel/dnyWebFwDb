@@ -460,6 +460,13 @@ body {
 }
 .review-header-right-stars {
 }
+.review-iteminfo a {
+    color: rgb(55, 120, 180);
+}
+.review-iteminfo a:hover {
+    color: rgb(55, 120, 180);
+    text-decoration: underline;
+}
 .review-content {
     margin-top: 20px;
     margin-bottom: 20px;

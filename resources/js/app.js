@@ -268,7 +268,7 @@ window.vue = new Vue({
             return html;
         },
 
-        renderReview: function(elem, user, isAdmin = false) {
+        renderReview: function(elem, user, isAdmin = false, renderItemInfo = false) {
             let stars = '';
             
             for (let i = 0; i < elem.stars; i++) {
@@ -291,6 +291,11 @@ window.vue = new Vue({
                 options += '<div class="review-footer-option"><a href="javascript:void(0);" onclick="window.vue.deleteReview(' + elem.id + ');">Delete</a>&nbsp;</div>';
             }
 
+            let itemInfo = '';
+            if (renderItemInfo) {
+                itemInfo = '<div class="review-iteminfo"><a href="'  + window.location.origin + '/view/' + elem.framework.slug + '">' + elem.framework.name + '</a></div>';
+            }
+
             let html = `
                 <div class="review">
                     <div class="review-header">
@@ -299,11 +304,13 @@ window.vue = new Vue({
                         </div>
 
                         <div class="review-header-right">
-                            <div class="review-header-right-username"><a href="">` + elem.userData.username + `</a></div>
+                            <div class="review-header-right-username"><a href="` + window.location.origin + '/user/' + elem.userData.username + `">` + elem.userData.username + `</a></div>
                             
                             <div class="review-header-right-stars">` + stars + `</div>
                         </div>
                     </div>
+
+                    ` + itemInfo + `
 
                     <div class="review-content is-wrap">` + elem.content + `</div>
 

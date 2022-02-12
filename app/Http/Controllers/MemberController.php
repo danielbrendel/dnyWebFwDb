@@ -15,6 +15,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\CaptchaModel;
+use App\Models\FrameworkModel;
 use App\Models\ReviewModel;
 use App\Models\ReportModel;
 use App\Models\AppModel;
@@ -147,6 +148,8 @@ class MemberController extends Controller
                 $item->userData->id = $user->id;
                 $item->userData->username = $user->username;
                 $item->userData->avatar = $user->avatar;
+
+                $item->framework = FrameworkModel::where('id', '=', $item->frameworkId)->first();
             }
 
             return response()->json(array('code' => 200, 'data' => $data->toArray()));

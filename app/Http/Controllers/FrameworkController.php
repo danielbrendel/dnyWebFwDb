@@ -118,6 +118,8 @@ class FrameworkController extends Controller
                 $item->userData->id = $user->id;
                 $item->userData->username = $user->username;
                 $item->userData->avatar = $user->avatar;
+
+                $item->framework = FrameworkModel::where('id', '=', $frameworkId)->first();
             }
 
             if (!\Auth::guest()) {
