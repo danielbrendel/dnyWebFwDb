@@ -64,4 +64,29 @@ class TwitterModel extends Model
             throw $e;
         }
     }
+
+    /**
+     * Twitter cronjob handler
+     * 
+     * @return void
+     * @return array
+     * @throws \Exception
+     */
+    public static function cronjob()
+    {
+        try {
+            $item = FrameworkModel::where('twitter_posted', '=', false)->where('approved', '=', true)->orderBy('id', 'asc')->first();
+
+            if ($item !== null) {
+                TwitterModel::postToTwitter($item);
+            }
+
+            $item->twitter_posted = true;
+            $item->save();
+
+            return $item->toArray();
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
 }

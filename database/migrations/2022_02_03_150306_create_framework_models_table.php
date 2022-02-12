@@ -39,6 +39,7 @@ class CreateFrameworkModelsTable extends Migration
             $table->string('website')->nullable();
             $table->string('twitter')->nullable();
             $table->boolean('approved')->default(false);
+            $table->boolean('twitter_posted')->default(false);
             $table->boolean('locked')->default(false);
             $table->timestamps();
         });

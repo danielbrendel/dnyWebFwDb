@@ -404,10 +404,6 @@ class AdminController extends Controller
 
             PushModel::addNotification(__('app.framework_item_approved_short'), __('app.framework_item_approved_long', ['name' => $item->name, 'url' => url('/view/' . $item->slug)]), 'PUSH_APPROVAL', $item->userId);
 
-            if (env('TWITTERBOT_ENABLE', false)) {
-                TwitterModel::postToTwitter($item);
-            }
-
             return back()->with('flash.success', __('app.framework_approved'));
         } catch (\Exception $e) {
             return back()->with('error', $e->getMessage());

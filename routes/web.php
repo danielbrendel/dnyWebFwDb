@@ -77,4 +77,5 @@ Route::get('/admin/entity/delete', [AdminController::class, 'deleteEntity']);
 Route::get('/admin/entity/safe', [AdminController::class, 'setSafeEntity']);
 Route::post('/admin/newsletter', [AdminController::class, 'newsletter']);
 
+Route::any('/cronjob/twitter/{password}', [MainController::class, 'cronjob_twitter']);
 Route::any('/cronjob/newsletter/{password}', [MainController::class, 'cronjob_newsletter']);

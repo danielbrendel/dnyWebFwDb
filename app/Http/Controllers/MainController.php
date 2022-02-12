@@ -16,6 +16,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\CaptchaModel;
 use App\Models\AppModel;
+use App\Models\TwitterModel;
 use App\Models\User;
 
 /**
@@ -222,6 +223,31 @@ class MainController extends Controller
             return redirect('/')->with('flash.success', __('app.logout_successful'));
         } catch (\Exception $e) {
             return back()->with('error', $e->getMessage());
+        }
+    }
+
+    /**
+     * Perform Twitter cronjob
+     *
+     * @param $password
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function cronjob_twitter($password)
+    {
+        try {
+            if (!env('TWITTERBOT_ENABLE', false)) {
+                throw new \Exception('Twitter Bot is currently disabled');
+            }
+
+            if ($password !== env('APP_CRONPW')) {
+                return response()->json(array('code' => 403));
+            }
+
+            $data = TwitterModel::cronjob();
+
+            return response()->json(array('code' => 200, 'data' => $data));
+        } catch (\Exception $e) {
+            return response()->json(array('code' => 500, 'msg' => $e->getMessage()));
         }
     }
 
