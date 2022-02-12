@@ -21,6 +21,7 @@ use App\Models\CaptchaModel;
 use App\Models\ImageModel;
 use App\Models\TwitterModel;
 use App\Models\PushModel;
+use App\Models\MailerModel;
 use App\Models\User;
 
 /**
@@ -403,6 +404,11 @@ class AdminController extends Controller
             $item->save();
 
             PushModel::addNotification(__('app.framework_item_approved_short'), __('app.framework_item_approved_long', ['name' => $item->name, 'url' => url('/view/' . $item->slug)]), 'PUSH_APPROVAL', $item->userId);
+
+            $user = User::where('id', '=', $item->userId)->first();
+
+            $html = view('mail.item_approved', ['name' => $item->name, 'url' => url('/view/' . $item->slug), 'username' => $user->username])->render();
+            MailerModel::sendMail($user->email, __('app.mail_subject_item_approval'), $html);
 
             return back()->with('flash.success', __('app.framework_approved'));
         } catch (\Exception $e) {
