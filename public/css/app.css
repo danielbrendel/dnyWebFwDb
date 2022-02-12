@@ -912,3 +912,9 @@ body {
 .avatar {
   border-radius: 50%;
 }
+
+@media screen and (max-width: 415px) {
+  .hide-on-small-device {
+    display: none;
+  }
+}

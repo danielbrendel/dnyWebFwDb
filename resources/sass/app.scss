@@ -766,3 +766,9 @@ body {
 .avatar {
     border-radius: 50%;
 }
+
+.hide-on-small-device {
+    @media screen and (max-width: 415px) {
+        display: none;
+    }
+}

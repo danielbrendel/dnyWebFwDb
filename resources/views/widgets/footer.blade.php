@@ -11,7 +11,7 @@
 
 <div class="footer">
     <div class="columns">
-        <div class="column is-4"></div>
+        <div class="column is-4 hide-on-small-device"></div>
 
         <div class="column is-4">
             <div class="footer-frame">
@@ -21,6 +21,6 @@
             </div>
         </div>
 
-        <div class="column is-4"></div>
+        <div class="column is-4 hide-on-small-device"></div>
     </div>
 </div>
