@@ -114,43 +114,45 @@
                         @endfor
                     </div>
 
-                    @if ($framework->user_review === null)
-                    <div class="reviews-write">
-                        <div class="reviews-write-title">{{ __('app.write_review') }}</div>
-
-                        <form method="POST" action="{{ url('/framework/' . $framework->id . '/review/send') }}">
-                            @csrf
-
-                            <div class="field">
-                                <div class="control">
-                                    <textarea class="textarea" name="content" placeholder="{{ __('app.review_content_placeholder') }}"></textarea>
-                                </div>
-                            </div>
-
-                            <div class="field">
-                                <div class="control">
-                                    <span class="review-star-color is-pointer" onclick="window.vue.setRating(1);"><i id="review_rating_star_1" class="far fa-star"></i></span>
-                                    <span class="review-star-color is-pointer" onclick="window.vue.setRating(2);"><i id="review_rating_star_2" class="far fa-star"></i></span>
-                                    <span class="review-star-color is-pointer" onclick="window.vue.setRating(3);"><i id="review_rating_star_3" class="far fa-star"></i></span>
-                                    <span class="review-star-color is-pointer" onclick="window.vue.setRating(4);"><i id="review_rating_star_4" class="far fa-star"></i></span>
-                                    <span class="review-star-color is-pointer" onclick="window.vue.setRating(5);"><i id="review_rating_star_5" class="far fa-star"></i></span>
-
-                                    <input type="hidden" name="rating" id="rating" value="0">
-                                </div>
-                            </div>
-
-                            <div class="field">
-                                <div class="control">
-                                    <input type="submit" class="button is-link" value="{{ __('app.submit_review') }}">
-                                </div>
-                            </div>
-                        </form>
-                    </div>
-                    @else
+                    @auth
+                        @if ($framework->user_review === null)
                         <div class="reviews-write">
-                            <div class="reviews-write-title">{{ __('app.already_reviewed') }}</div>
+                            <div class="reviews-write-title">{{ __('app.write_review') }}</div>
+
+                            <form method="POST" action="{{ url('/framework/' . $framework->id . '/review/send') }}">
+                                @csrf
+
+                                <div class="field">
+                                    <div class="control">
+                                        <textarea class="textarea" name="content" placeholder="{{ __('app.review_content_placeholder') }}"></textarea>
+                                    </div>
+                                </div>
+
+                                <div class="field">
+                                    <div class="control">
+                                        <span class="review-star-color is-pointer" onclick="window.vue.setRating(1);"><i id="review_rating_star_1" class="far fa-star"></i></span>
+                                        <span class="review-star-color is-pointer" onclick="window.vue.setRating(2);"><i id="review_rating_star_2" class="far fa-star"></i></span>
+                                        <span class="review-star-color is-pointer" onclick="window.vue.setRating(3);"><i id="review_rating_star_3" class="far fa-star"></i></span>
+                                        <span class="review-star-color is-pointer" onclick="window.vue.setRating(4);"><i id="review_rating_star_4" class="far fa-star"></i></span>
+                                        <span class="review-star-color is-pointer" onclick="window.vue.setRating(5);"><i id="review_rating_star_5" class="far fa-star"></i></span>
+
+                                        <input type="hidden" name="rating" id="rating" value="0">
+                                    </div>
+                                </div>
+
+                                <div class="field">
+                                    <div class="control">
+                                        <input type="submit" class="button is-link" value="{{ __('app.submit_review') }}">
+                                    </div>
+                                </div>
+                            </form>
                         </div>
-                    @endif
+                        @else
+                            <div class="reviews-write">
+                                <div class="reviews-write-title">{{ __('app.already_reviewed') }}</div>
+                            </div>
+                        @endif
+                    @endauth
 
                     <div class="reviews-content" id="review-content"></div>
                 </div>

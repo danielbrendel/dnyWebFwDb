@@ -300,7 +300,7 @@ window.vue = new Vue({
                 <div class="review">
                     <div class="review-header">
                         <div class="review-header-left">
-                            <img src="` + window.location.origin + '/gfx/avatars/' + elem.userData.avatar + `" width="64" height="64">
+                            <img class="avatar" src="` + window.location.origin + '/gfx/avatars/' + elem.userData.avatar + `" width="64" height="64">
                         </div>
 
                         <div class="review-header-right">

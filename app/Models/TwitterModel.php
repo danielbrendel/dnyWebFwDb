@@ -79,12 +79,14 @@ class TwitterModel extends Model
 
             if ($item !== null) {
                 TwitterModel::postToTwitter($item);
+
+                $item->twitter_posted = true;
+                $item->save();
+
+                return $item->toArray();
             }
 
-            $item->twitter_posted = true;
-            $item->save();
-
-            return $item->toArray();
+            return array();
         } catch (\Exception $e) {
             throw $e;
         }
