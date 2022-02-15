@@ -124,6 +124,7 @@ return [
     'framework_twitter_placeholder' => 'Enter Twitter handle',
     'framework_website_placeholder' => 'Enter the projects website',
     'framework_logo_hint' => 'Please use landscape layout',
+    'framework_tags_hint' => 'Tags separated by spaces, e.g. tag1 tag2 tag3 etc',
     'framework_saved_successfully' => 'Framework data has been updated',
     'register_welcome_short' => 'Welcome aboard!',
     'register_welcome_long' => 'Welcome to ' . env('APP_NAME') . '! Be sure to complete your <a href=":url">profile</a> first. Have a nice time!',

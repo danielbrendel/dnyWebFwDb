@@ -77,6 +77,7 @@
                             <div class="control">
                                 <input class="input" type="text" name="tags" placeholder="{{ __('app.framework_tags_placeholder') }}" value="{{ old('tags') }}">
                             </div>
+                            <p class="help">{{ __('app.framework_tags_hint') }}</p>
                         </div>
 
                         <div class="field">
