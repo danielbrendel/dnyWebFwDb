@@ -100,6 +100,9 @@ class FrameworkModel extends Model
 
             $item->save();
 
+            $item->slug = Str::slug(strval($item->id) . ' ' . $attr['name']);
+            $item->save();
+
             return $item->id;
         } catch (\Exception $e) {
             throw $e;
