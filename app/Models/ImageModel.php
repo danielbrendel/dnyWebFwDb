@@ -123,29 +123,31 @@ class ImageModel extends Model
 
         $factor = 1.0;
 
-        if ($width > $height) {
-            if (($width >= 800) and ($width < 1000)) {
-                $factor = 0.5;
-            } else if (($width >= 1000) and ($width < 1250)) {
-                $factor = 0.4;
-            } else if (($width >= 1250) and ($width < 1500)) {
-                $factor = 0.4;
-            } else if (($width >= 1500) and ($width < 2000)) {
-                $factor = 0.3;
-            } else if ($width >= 2000) {
-                $factor = 0.2;
-            }
-        } else {
-            if (($height >= 800) and ($height < 1000)) {
-                $factor = 0.5;
-            } else if (($height >= 1000) and ($height < 1250)) {
-                $factor = 0.4;
-            } else if (($height >= 1250) and ($height < 1500)) {
-                $factor = 0.4;
-            } else if (($height >= 1500) and ($height < 2000)) {
-                $factor = 0.3;
-            } else if ($height >= 2000) {
-                $factor = 0.2;
+        if (env('APP_RESIZEIMAGES')) {
+            if ($width > $height) {
+                if (($width >= 800) and ($width < 1000)) {
+                    $factor = 0.5;
+                } else if (($width >= 1000) and ($width < 1250)) {
+                    $factor = 0.4;
+                } else if (($width >= 1250) and ($width < 1500)) {
+                    $factor = 0.4;
+                } else if (($width >= 1500) and ($width < 2000)) {
+                    $factor = 0.3;
+                } else if ($width >= 2000) {
+                    $factor = 0.2;
+                }
+            } else {
+                if (($height >= 800) and ($height < 1000)) {
+                    $factor = 0.5;
+                } else if (($height >= 1000) and ($height < 1250)) {
+                    $factor = 0.4;
+                } else if (($height >= 1250) and ($height < 1500)) {
+                    $factor = 0.4;
+                } else if (($height >= 1500) and ($height < 2000)) {
+                    $factor = 0.3;
+                } else if ($height >= 2000) {
+                    $factor = 0.2;
+                }
             }
         }
 
