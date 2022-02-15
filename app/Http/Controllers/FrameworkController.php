@@ -269,7 +269,7 @@ class FrameworkController extends Controller
 
             return redirect('/')->with('success', __('app.framework_submitted_successfully'));
         } catch (\Exception $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->withInput()->with('error', $e->getMessage());
         }
     }
 
