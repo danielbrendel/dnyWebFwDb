@@ -25,27 +25,29 @@
         <div class="navbar-start"></div>
 
         @if ((isset($fw_item_filter)) && ($fw_item_filter))
-        <center>
-            <div class="navbar-item has-dropdown is-hoverable is-inline-block">
-                <a class="navbar-link is-top-5" href="javascript:void(0);" onclick="window.vue.toggleDropdown(document.getElementById('language-dropdown'));">
-                    {{ __('app.select_language') }}
-                </a>
+        <div class="navbar-options">
+            <center>
+                <div class="navbar-item has-dropdown is-hoverable is-inline-block">
+                    <a class="navbar-link is-top-5" href="javascript:void(0);" onclick="window.vue.toggleDropdown(document.getElementById('language-dropdown'));">
+                        {{ __('app.select_language') }}
+                    </a>
 
-                <div class="navbar-dropdown is-dropdown-aligned is-hidden" id="language-dropdown">
-                    @foreach (\App\Models\LanguageModel::getLanguages() as $item)
-                        <a class="navbar-item" href="{{ url('/') }}?lang={{ $item->id }}">{{ $item->language }}</a>
-                    @endforeach
+                    <div class="navbar-dropdown is-dropdown-aligned is-hidden" id="language-dropdown">
+                        @foreach (\App\Models\LanguageModel::getLanguages() as $item)
+                            <a class="navbar-item" href="{{ url('/') }}?lang={{ $item->id }}">{{ $item->language }}</a>
+                        @endforeach
+                    </div>
                 </div>
-            </div>
 
-            <div class="control has-icons-right is-inline-block is-mobile-top-5">
-                <input class="input is-border-rounded is-input-navbar" type="text" placeholder="{{ __('app.search_framework') }}" value="@if (isset($_GET['text_search'])) {{ $_GET['text_search'] }} @endif" onkeypress="if (event.which === 13) location.href='{{ url('/') }}?text_search=' + this.value;">
+                <div class="control has-icons-right is-inline-block is-mobile-top-5">
+                    <input class="input is-border-rounded is-input-navbar" type="text" placeholder="{{ __('app.search_framework') }}" value="@if (isset($_GET['text_search'])) {{ $_GET['text_search'] }} @endif" onkeypress="if (event.which === 13) location.href='{{ url('/') }}?text_search=' + this.value;">
 
-                <span class="icon is-small is-right">
-                    <i class="fas fa-search"></i>
-                </span>
-            </div>
-        </center>
+                    <span class="icon is-small is-right">
+                        <i class="fas fa-search"></i>
+                    </span>
+                </div>
+            </center>
+        </div>
         @endif
 
         <div class="navbar-end">

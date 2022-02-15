@@ -141,6 +141,12 @@ body {
         background-color: rgb(50, 50, 50);
     }
 }
+.navbar-options {
+    @media screen and (max-width: 630px) {
+        position: relative;
+        top: -16px;
+    }
+}
 
 .about {
     width: 100%;
@@ -662,7 +668,7 @@ body {
     background-color: rgb(128, 200, 128);
 }
 .notification-badge {
-    color: rgb(255, 255, 255);
+    color: rgb(200, 200, 200);
     text-decoration: none;
     position: relative;
     display: inline-block;

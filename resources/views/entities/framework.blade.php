@@ -54,11 +54,19 @@
 
                     <div class="framework-item-full-description is-wrap">{{ $framework->description }}</div>
 
+                    @if (isset($framework->github->html_url))
                     <div class="framework-item-full-github">
                         @include('widgets.github', ['github' => $framework->github])
                     </div>
+                    @endif
 
                     <div class="framework-item-full-links">
+                        @if (!isset($framework->github->html_url))
+                        <div class="framework-item-full-links-github">
+                            <i class="fab fa-github"></i>&nbsp;<a href="https://github.com/{{ $framework->github }}">{{ $framework->github }}</a>
+                        </div>
+                        @endif
+
                         @if (($framework->twitter !== null) && (is_string($framework->twitter)) && (strlen($framework->twitter) > 0))
                         <div class="framework-item-full-links-twitter">
                             <i class="fab fa-twitter"></i>&nbsp;<a href="https://twitter.com/{{ $framework->twitter }}">{{ $framework->twitter }}</a>

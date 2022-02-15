@@ -180,15 +180,22 @@ class FrameworkController extends Controller
             $item->userData->username = $user->username;
 
             $item->views = AppModel::countAsString(UniqueViewModel::viewForItem($item->id));
-            $item->github = GithubModel::queryRepoInfo($item->github);
-            $item->github->last_commit_diff = Carbon::parse($item->github->pushed_at)->diffForHumans();
-            $item->github->commit_day_count = Carbon::parse($item->github->pushed_at)->diff(Carbon::now())->days;
-            $item->github->stargazers_count = AppModel::countAsString($item->github->stargazers_count);
-            $item->github->forks_count = AppModel::countAsString($item->github->forks_count);
             $item->tags = explode(' ', $item->tags);
             $item->avg_stars = ReviewModel::getAverageStars($item->id);
             $item->review_count = ReviewModel::getReviewCount($item->id);
             $item->user_review = ReviewModel::where('frameworkId', '=', $item->id)->where('userId', '=', auth()->id())->first();
+
+            $old_github = $item->github;
+
+            try {
+                $item->github = GithubModel::queryRepoInfo($item->github);
+                $item->github->last_commit_diff = Carbon::parse($item->github->pushed_at)->diffForHumans();
+                $item->github->commit_day_count = Carbon::parse($item->github->pushed_at)->diff(Carbon::now())->days;
+                $item->github->stargazers_count = AppModel::countAsString($item->github->stargazers_count);
+                $item->github->forks_count = AppModel::countAsString($item->github->forks_count);
+            } catch (\Exception $e) {
+                $item->github = $old_github;
+            }
             
             $others = FrameworkModel::queryRandom($item->id, $item->langId, env('APP_QUERYRANDOMCOUNT'));
             foreach ($others as &$other) {

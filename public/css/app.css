@@ -160,6 +160,13 @@ body {
   }
 }
 
+@media screen and (max-width: 630px) {
+  .navbar-options {
+    position: relative;
+    top: -16px;
+  }
+}
+
 .about {
   width: 100%;
   height: auto;
@@ -792,7 +799,7 @@ body {
 }
 
 .notification-badge {
-  color: white;
+  color: #c8c8c8;
   text-decoration: none;
   position: relative;
   display: inline-block;
