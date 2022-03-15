@@ -34,7 +34,7 @@
 
                     <div class="navbar-dropdown is-dropdown-aligned is-hidden" id="language-dropdown">
                         @foreach (\App\Models\LanguageModel::getLanguages() as $item)
-                            <a class="navbar-item" href="{{ url('/') }}?lang={{ $item->id }}">{{ $item->language }}</a>
+                            <a class="navbar-item" href="{{ url('/') }}?lang={{ $item->slug }}">{{ $item->language }}</a>
                         @endforeach
                     </div>
                 </div>

@@ -162,7 +162,13 @@ class FrameworkModel extends Model
     {
         try {
             if ($lang !== '_all_') {
-                $query = static::where('langId', '=', $lang);
+                $query = static::where(function($query) use($lang) {
+                    $query->where('langId', function($query) use($lang) {
+                        $query->select('id')
+                            ->from('language_models')
+                            ->where('slug', '=', $lang);
+                    });
+                });
             } else {
                 $query = static::where('langId', '>', 0);
             }
