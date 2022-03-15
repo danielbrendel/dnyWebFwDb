@@ -301,11 +301,13 @@ body {
 
 .framework-item-stats-stars {
   display: inline-block;
+  color: #323232 !important;
 }
 
 .framework-item-stats-views {
   display: inline-block;
   float: right;
+  color: #323232 !important;
 }
 
 .framework-item-full {

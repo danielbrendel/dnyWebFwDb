@@ -2270,6 +2270,11 @@ window.vue = new Vue({
         tags += '<span><a href="' + window.location.origin + '/?tag=' + tag + '">#' + tag + '</a>&nbsp;</span>';
       }
     });
+
+    if (tags.length === 0) {
+      tags = '&nbsp;';
+    }
+
     var stars = '';
 
     for (var i = 0; i < elem.avg_stars; i++) {

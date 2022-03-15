@@ -230,6 +230,10 @@ window.vue = new Vue({
                 }
             });
 
+            if (tags.length === 0) {
+                tags = '&nbsp;';
+            }
+
             let stars = '';
             
             for (let i = 0; i < elem.avg_stars; i++) {
