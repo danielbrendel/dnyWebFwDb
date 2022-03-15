@@ -243,26 +243,28 @@ window.vue = new Vue({
             }
 
             let html = `
-                <div class="framework-item is-pointer" onclick="location.href = '` + window.location.origin + `/view/` + elem.slug + `';">
-                    <div class="framework-item-image" style="background-image: url('` + window.location.origin + '/gfx/logos/' + elem.logo + `')"></div>
+                <a href="` + window.location.origin + `/view/` + elem.slug + `">
+                    <div class="framework-item is-pointer">
+                        <div class="framework-item-image" style="background-image: url('` + window.location.origin + '/gfx/logos/' + elem.logo + `')"></div>
 
-                    <div class="framework-item-about">
-                        <div class="framework-item-about-title">` + elem.name + `</div>
-                        <div class="framework-item-about-hint">` + elem.summary + `</div>
-                        <div class="framework-item-about-tags">` + tags + `</div>
-                    </div>
-
-                    <div class="framework-item-stats">
-                        <div class="framework-item-stats-stars">
-                            ` + stars + `
-                            ` + window.vue.translationTable.reviewCount.replace(':count', elem.review_count) + `
+                        <div class="framework-item-about">
+                            <div class="framework-item-about-title">` + elem.name + `</div>
+                            <div class="framework-item-about-hint">` + elem.summary + `</div>
+                            <div class="framework-item-about-tags">` + tags + `</div>
                         </div>
 
-                        <div class="framework-item-stats-views">
-                            <i class="far fa-eye"></i>&nbsp;` + elem.views + `
+                        <div class="framework-item-stats">
+                            <div class="framework-item-stats-stars">
+                                ` + stars + `
+                                ` + window.vue.translationTable.reviewCount.replace(':count', elem.review_count) + `
+                            </div>
+
+                            <div class="framework-item-stats-views">
+                                <i class="far fa-eye"></i>&nbsp;` + elem.views + `
+                            </div>
                         </div>
                     </div>
-                </div>
+                </a>
             `;
 
             return html;
